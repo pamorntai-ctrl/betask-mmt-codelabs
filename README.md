@@ -2,7 +2,7 @@
 
 Interactive learning codelabs สำหรับ deploy ระบบ Queue Management บน Oracle Cloud Infrastructure (OCI)
 
-🔗 **Live site:** https://ais-mmt-codelabs.pages.dev (auto-deployed via Cloudflare Pages)
+🔗 **Live site:** https://betask-mmt-codelabs.pages.dev (auto-deployed via Cloudflare Pages)
 
 ## 📚 Codelabs
 
@@ -58,7 +58,7 @@ Interactive learning codelabs สำหรับ deploy ระบบ Queue Manag
 
 Connected to Cloudflare Pages. Every push to `main` triggers automatic deployment.
 
-- **Production:** `main` branch → `https://ais-mmt-codelabs.pages.dev`
+- **Production:** `main` branch → `https://betask-mmt-codelabs.pages.dev`
 - **Preview:** Pull requests get unique preview URLs
 
 ## 📝 License

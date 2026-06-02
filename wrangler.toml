@@ -1,6 +1,6 @@
-name = "ais-mmt-codelabs"
+name = "betask-mmt-codelabs"
 compatibility_date = "2026-06-02"
 pages_build_output_dir = "."
 
 [env.production]
-name = "ais-mmt-codelabs"
+name = "betask-mmt-codelabs"

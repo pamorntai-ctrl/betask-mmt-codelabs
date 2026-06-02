@@ -39,10 +39,10 @@ wrangler login
 
 # 3. Deploy from this folder
 cd cf-deploy/
-wrangler pages deploy . --project-name=ais-mmt-codelabs
+wrangler pages deploy . --project-name=betask-mmt-codelabs
 
 # That's it! You'll get a URL like:
-# https://ais-mmt-codelabs.pages.dev
+# https://betask-mmt-codelabs.pages.dev
 ```
 
 **First-time setup creates the project automatically.** Each subsequent run updates the existing deployment.
@@ -53,11 +53,11 @@ wrangler pages deploy . --project-name=ais-mmt-codelabs
 
 1. Go to <https://dash.cloudflare.com>
 2. Navigate: **Workers & Pages** → **Create application** → **Pages** → **Upload assets**
-3. Project name: `ais-mmt-codelabs`
+3. Project name: `betask-mmt-codelabs`
 4. Drag the entire `cf-deploy/` folder into the upload area
 5. Click **Deploy site**
 
-Done in ~2 minutes. URL: `https://ais-mmt-codelabs.pages.dev`
+Done in ~2 minutes. URL: `https://betask-mmt-codelabs.pages.dev`
 
 ---
 
@@ -88,7 +88,7 @@ After this, every `git push` auto-deploys.
 
 After deployment, attach a custom domain like `codelabs.ais.co.th`:
 
-1. Cloudflare Dashboard → Workers & Pages → ais-mmt-codelabs → **Custom domains**
+1. Cloudflare Dashboard → Workers & Pages → betask-mmt-codelabs → **Custom domains**
 2. **Set up a custom domain** → enter `codelabs.ais.co.th`
 3. Add the DNS record at AIS's DNS provider (or use Cloudflare DNS)
 4. Wait ~5 minutes for SSL cert provisioning
@@ -137,14 +137,14 @@ After deployment, attach a custom domain like `codelabs.ais.co.th`:
 
 ```bash
 # Test landing page
-curl -I https://ais-mmt-codelabs.pages.dev/
+curl -I https://betask-mmt-codelabs.pages.dev/
 
 # Test friendly redirects
-curl -I https://ais-mmt-codelabs.pages.dev/nonprod
-curl -I https://ais-mmt-codelabs.pages.dev/prod
+curl -I https://betask-mmt-codelabs.pages.dev/nonprod
+curl -I https://betask-mmt-codelabs.pages.dev/prod
 
 # Test diagrams load
-curl -I https://ais-mmt-codelabs.pages.dev/resource/architecture_diagram_oci.svg
+curl -I https://betask-mmt-codelabs.pages.dev/resource/architecture_diagram_oci.svg
 ```
 
 Expected: all return `200 OK` (or `301` for redirects)
@@ -161,7 +161,7 @@ cp ../OCI_NonProd_Codelab.html ../OCI_Prod_Codelab.html ./
 cp ../resource/architecture_diagram_oci*.{svg,png} resource/
 
 # Re-deploy
-wrangler pages deploy . --project-name=ais-mmt-codelabs
+wrangler pages deploy . --project-name=betask-mmt-codelabs
 ```
 
 Cloudflare keeps history of all deployments · can roll back if needed.
