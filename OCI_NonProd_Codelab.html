@@ -250,6 +250,92 @@
     50% { filter: drop-shadow(0 0 8px rgba(22,163,74,0.7)); }
     100% { filter: drop-shadow(0 0 0 rgba(22,163,74,0)); }
   }
+
+  /* CLI / Console GUI track switcher */
+  .track-tabs {
+    display: flex; gap: 0; margin: 18px 0 22px;
+    border: 1px solid #e0e4e9; border-radius: 8px; overflow: hidden;
+    background: #f4f6f8;
+    font-size: 13.5px;
+  }
+  .tab-btn {
+    flex: 1; padding: 11px 18px; background: transparent; color: #4a5260;
+    border: none; cursor: pointer; font-family: inherit; font-weight: 600;
+    font-size: 13.5px; transition: background 0.15s, color 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-right: 1px solid #e0e4e9;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn:hover { background: #ffffff; color: #1a1f29; }
+  .tab-btn.active { background: #ffffff; color: #C74634; box-shadow: inset 0 -3px 0 #C74634; }
+  .track-panel { display: none; }
+  .track-panel.active { display: block; }
+  .track-panel.gui h2 { color: #1a1f29; }
+
+  /* Screenshot placeholder block */
+  .gui-shot {
+    margin: 16px 0 22px; padding: 0;
+    border: 1px solid #e0e4e9; border-radius: 10px; overflow: hidden;
+    background: #ffffff;
+  }
+  .shot-frame {
+    position: relative; background: #f8fafc;
+    border-bottom: 1px solid #e0e4e9;
+    min-height: 80px;
+  }
+  .shot-frame img {
+    display: block; width: 100%; height: auto; max-height: 720px;
+    object-fit: contain; background: #ffffff;
+  }
+  .shot-placeholder {
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 24px; gap: 8px; text-align: center;
+    background: repeating-linear-gradient(135deg, #fef5f4 0, #fef5f4 14px, #fdebe9 14px, #fdebe9 28px);
+    color: #4a5260;
+  }
+  .shot-frame.missing img { display: none; }
+  .shot-frame.missing .shot-placeholder { display: flex; }
+  .placeholder-icon { font-size: 28px; line-height: 1; }
+  .placeholder-title { font-weight: 700; color: #C74634; font-size: 14px; letter-spacing: 0.3px; }
+  .placeholder-file { background: #ffffff; color: #be185d; padding: 4px 10px; border-radius: 4px;
+    border: 1px solid #e0e4e9; font-size: 12px; font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .placeholder-hint { font-size: 12.5px; color: #4a5260; max-width: 520px; line-height: 1.5; }
+  .gui-shot figcaption {
+    padding: 10px 14px; font-size: 13.5px; color: #1a1f29;
+    display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;
+  }
+  .shot-id {
+    flex-shrink: 0; background: #C74634; color: #ffffff; font-weight: 700;
+    font-size: 11.5px; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.3px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    align-self: center;
+  }
+  .gui-shot .annotate {
+    flex-basis: 100%; margin-top: 4px; font-size: 12.5px; color: #7a8595;
+  }
+  .gui-shot .annotate summary {
+    cursor: pointer; user-select: none; color: #C74634; font-weight: 600;
+  }
+  .gui-shot .annotate[open] summary { margin-bottom: 4px; }
+
+  /* GUI walkthrough step list */
+  .gui-steps { counter-reset: gui-step; padding-left: 0; list-style: none; margin: 14px 0; }
+  .gui-steps > li {
+    counter-increment: gui-step;
+    position: relative; padding: 10px 12px 10px 44px; margin: 8px 0;
+    background: #ffffff; border: 1px solid #e0e4e9; border-radius: 8px;
+    color: #1a1f29; line-height: 1.65;
+  }
+  .gui-steps > li::before {
+    content: counter(gui-step); position: absolute; left: 12px; top: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #C74634; color: #ffffff; font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gui-steps strong { color: #1a1f29; }
+  .gui-steps code { background: #f1f5f9 !important; color: #be185d !important;
+    padding: 2px 7px; border-radius: 3px; font-size: 12.5px;
+    font-family: "SF Mono", Menlo, Consolas, monospace; border: 1px solid #e2e8f0; }
 </style>
 </head>
 <body>
@@ -602,6 +688,13 @@ echo "Region: $REGION"</pre></div>
         <div class="goal-text">Compartment "nonprod" + VCN 10.30.0.0/16 พร้อม subnets: public-lb · oke-nodes · oke-pods · private-data</div>
       </div>
 
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
+
       <h2>2.1 สร้าง Compartment</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
@@ -687,6 +780,365 @@ export SG_OCID=$(oci network service-gateway create \
 # คาดว่าได้: AVAILABLE</pre></div>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>2.1 สร้าง Compartment (Console GUI)</h2>
+
+      <p>เข้า OCI Console ที่ <code class="inline">cloud.oracle.com</code> · ล็อกอินด้วย tenancy name + user · เลือก region <code class="inline">Singapore (ap-singapore-1)</code> จาก dropdown มุมขวาบน</p>
+
+      <ol class="gui-steps">
+        <li><strong>เปิดเมนู Compartments:</strong> คลิก hamburger menu (☰) มุมซ้ายบน → <code>Identity &amp; Security</code> → <code>Compartments</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.1a-identity-compartments-nav.png"
+               alt="OCI Console — hamburger menu showing Identity &amp; Security → Compartments"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.1a-identity-compartments-nav.png</code>
+            <div class="placeholder-hint">Capture: hamburger menu expanded, with <strong>Identity &amp; Security</strong> hovered and <strong>Compartments</strong> visible in the submenu.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.1a</span>
+          Navigate: <code>☰</code> → Identity &amp; Security → Compartments
+          <details class="annotate"><summary>Annotation hints</summary>
+            Draw red box around the hamburger icon and a second box around the “Compartments” submenu item. Crop to show only the left navigation column.
+          </details>
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="2">
+        <li><strong>คลิก Create Compartment</strong> ปุ่มสีแดงด้านบนของตาราง</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.1b-compartments-list-create-button.png"
+               alt="OCI Console — Compartments list page with Create Compartment button"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.1b-compartments-list-create-button.png</code>
+            <div class="placeholder-hint">Capture: Compartments list page, full width, with the <strong>Create Compartment</strong> button highlighted.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.1b</span>
+          Compartments list → click <strong>Create Compartment</strong>
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li><strong>กรอกฟอร์ม:</strong>
+          <ul>
+            <li><strong>Name:</strong> <code>compartment-nonprod-aisXXXX</code> (ใช้ค่าจาก <code>$COMPARTMENT_NAME</code>)</li>
+            <li><strong>Description:</strong> <code>Non-Prod environment for AIS MMT-RFP · dev/qa/uat/staging</code></li>
+            <li><strong>Parent Compartment:</strong> <code>(root)</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.1c-compartment-create-form-filled.png"
+               alt="OCI Console — Create Compartment dialog, filled in"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.1c-compartment-create-form-filled.png</code>
+            <div class="placeholder-hint">Capture: the <strong>Create Compartment</strong> side-panel with Name + Description + Parent fields filled. Redact tenancy OCID if visible.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.1c</span>
+          Create Compartment dialog with all fields filled
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>คลิก Create Compartment</strong> ปุ่มล่างของฟอร์ม → รอ status เปลี่ยนเป็น <code>Active</code> (~10 วินาที)</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.1d-compartment-active.png"
+               alt="OCI Console — new compartment in Active state"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.1d-compartment-active.png</code>
+            <div class="placeholder-hint">Capture: the new compartment row in the Compartments list with State = <strong>Active</strong>. Copy the OCID from this page for env vars.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.1d</span>
+          New compartment shown with State = Active · copy the OCID
+        </figcaption>
+      </figure>
+
+      <div class="note">
+        <div class="note-label">Compartments vs Resource Groups</div>
+        <p>OCI Compartment ทำหน้าที่คล้าย Azure Resource Group แต่ยืดหยุ่นกว่า · มี hierarchy ได้ · IAM policy ผูกกับ compartment · การเก็บ tag, quota, billing แยกตาม compartment</p>
+      </div>
+
+      <h2>2.2 สร้าง VCN + Subnets (Console GUI)</h2>
+
+      <p>OCI Console มี <strong>VCN Wizard</strong> ที่สร้าง VCN + Subnets + Gateways + Route Tables ในขั้นตอนเดียว · เร็วและ less error-prone กว่าสร้างทีละชิ้น</p>
+
+      <ol class="gui-steps">
+        <li><strong>เปลี่ยนไปที่ compartment ใหม่:</strong> ใน Console มุมซ้าย เลือก compartment dropdown → <code>compartment-nonprod-aisXXXX</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2a-compartment-switcher.png"
+               alt="OCI Console — compartment switcher in left panel"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2a-compartment-switcher.png</code>
+            <div class="placeholder-hint">Capture: list/resource page showing the “Compartment” dropdown on the left, expanded to show the new compartment selected.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2a</span>
+          Switch active compartment to <code>compartment-nonprod-aisXXXX</code>
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="2">
+        <li><strong>เปิด Networking:</strong> <code>☰</code> → <code>Networking</code> → <code>Virtual Cloud Networks</code></li>
+        <li>คลิก <strong>Start VCN Wizard</strong> (ไม่ใช่ "Create VCN" ธรรมดา) → เลือก <code>Create VCN with Internet Connectivity</code> → <strong>Start VCN Wizard</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2b-vcn-wizard-start.png"
+               alt="OCI Console — Start VCN Wizard dialog"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2b-vcn-wizard-start.png</code>
+            <div class="placeholder-hint">Capture: VCN list page with the “Start VCN Wizard” dialog showing the two wizard options, "Create VCN with Internet Connectivity" selected.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2b</span>
+          Start VCN Wizard → Create VCN with Internet Connectivity
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>กรอก wizard step 1 (Basic Information):</strong>
+          <ul>
+            <li><strong>VCN Name:</strong> <code>vcn-nonprod-aisXXXX</code></li>
+            <li><strong>Compartment:</strong> <code>compartment-nonprod-aisXXXX</code> (auto-filled)</li>
+            <li><strong>VCN CIDR Block:</strong> <code>10.30.0.0/16</code></li>
+            <li><strong>Public Subnet CIDR Block:</strong> <code>10.30.0.0/24</code></li>
+            <li><strong>Private Subnet CIDR Block:</strong> <code>10.30.1.0/24</code> (เราจะแก้ไข + เพิ่ม subnet ทีหลัง)</li>
+            <li>✓ <strong>Use DNS Hostnames in this VCN</strong></li>
+            <li><strong>DNS Label:</strong> <code>vcnaisXXXX</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2c-vcn-wizard-form-top.png"
+               alt="OCI Console — VCN Wizard form, top half"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2c-vcn-wizard-form-top.png</code>
+            <div class="placeholder-hint">Capture: top half of the wizard with VCN Name, Compartment, CIDR Block fields visible and filled.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2c</span>
+          VCN Wizard — Basic Information section filled
+        </figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2d-vcn-wizard-form-subnets.png"
+               alt="OCI Console — VCN Wizard form, subnet CIDR section"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2d-vcn-wizard-form-subnets.png</code>
+            <div class="placeholder-hint">Capture: subnet CIDR fields (Public 10.30.0.0/24, Private 10.30.1.0/24) and DNS Label / Hostname checkbox.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2d</span>
+          VCN Wizard — Subnet CIDRs + DNS settings
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>คลิก Next</strong> → ดู Review page → <strong>Create</strong></li>
+        <li>รอ ~30 วินาที จนทุก resource ขึ้น <code>Available</code> · wizard จะสร้างให้ครบ:
+          <ul>
+            <li>VCN + 2 subnets (public, private)</li>
+            <li>Internet Gateway + NAT Gateway + Service Gateway</li>
+            <li>Route tables (public route → IGW · private route → NAT/SG)</li>
+            <li>Default security list + DHCP options</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2e-vcn-wizard-review.png"
+               alt="OCI Console — VCN Wizard Review page"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2e-vcn-wizard-review.png</code>
+            <div class="placeholder-hint">Capture: full Review screen showing the list of all resources the wizard will create (VCN, subnets, IGW, NAT, SG, route tables).</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2e</span>
+          VCN Wizard — Review page (verify resources before Create)
+        </figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2f-vcn-creation-progress.png"
+               alt="OCI Console — VCN Wizard creation progress"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2f-vcn-creation-progress.png</code>
+            <div class="placeholder-hint">Capture: the wizard progress page where each resource ticks green as it gets created. Take the shot once 5/6 or all are green.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2f</span>
+          VCN Wizard — creation progress (resources turning green)
+        </figcaption>
+      </figure>
+
+      <h3>เพิ่ม subnets <code>oke-pods</code> + <code>private-data</code></h3>
+      <p>VCN Wizard สร้าง 2 subnets ให้ · เราต้องเพิ่มอีก 2 (สำหรับ pod IPs และ data tier)</p>
+
+      <ol class="gui-steps">
+        <li><strong>เปิด VCN details:</strong> Networking → Virtual Cloud Networks → คลิก <code>vcn-nonprod-aisXXXX</code></li>
+        <li>ที่ sidebar เลือก <strong>Subnets</strong> → คลิก <strong>Create Subnet</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2g-vcn-detail-subnets-list.png"
+               alt="OCI Console — VCN detail page, Subnets tab"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2g-vcn-detail-subnets-list.png</code>
+            <div class="placeholder-hint">Capture: VCN detail page with left sidebar (“Resources” menu), Subnets selected, showing the 2 wizard-created subnets.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2g</span>
+          VCN detail → Subnets tab → Create Subnet
+        </figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li><strong>กรอกฟอร์ม Subnet 1 (oke-pods):</strong>
+          <ul>
+            <li><strong>Name:</strong> <code>oke-pods</code></li>
+            <li><strong>Subnet Type:</strong> <code>Regional</code></li>
+            <li><strong>CIDR Block:</strong> <code>10.30.4.0/22</code></li>
+            <li><strong>Route Table:</strong> เลือก private route table (มี NAT + SG)</li>
+            <li><strong>Subnet Access:</strong> <code>Private Subnet</code></li>
+            <li><strong>DHCP Options:</strong> default</li>
+            <li><strong>DNS Label:</strong> <code>okepods</code></li>
+          </ul>
+        </li>
+        <li><strong>Create</strong> → ทำซ้ำสำหรับ <code>private-data</code> (CIDR <code>10.30.10.0/24</code>, DNS <code>privdata</code>)</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2h-create-subnet-form.png"
+               alt="OCI Console — Create Subnet form, filled for oke-pods"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2h-create-subnet-form.png</code>
+            <div class="placeholder-hint">Capture: Create Subnet panel with Name=oke-pods, Regional, CIDR 10.30.4.0/22, Private Subnet selected, Route Table = private.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2h</span>
+          Create Subnet form — <code>oke-pods</code> (repeat for <code>private-data</code>)
+        </figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy"
+               src="resource/screenshots/nonprod/nonprod-2.2i-vcn-final-4-subnets.png"
+               alt="OCI Console — VCN with all 4 subnets created"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-2.2i-vcn-final-4-subnets.png</code>
+            <div class="placeholder-hint">Capture: VCN Subnets list showing all 4 subnets — public-lb, oke-nodes, oke-pods, private-data — each in <strong>Available</strong> state.</div>
+          </div>
+        </div>
+        <figcaption>
+          <span class="shot-id">2.2i</span>
+          ✓ Verify: all 4 subnets present and Available
+        </figcaption>
+      </figure>
+
+      <div class="technique">
+        <div class="technique-label">3 Gateways = 3 บทบาท</div>
+        <p><strong>Internet Gateway</strong> = public ingress · <strong>NAT Gateway</strong> = private egress to internet · <strong>Service Gateway</strong> = private access to OCI services (Object Storage, Streaming, etc.) โดยไม่ผ่าน internet · ประหยัด egress cost</p>
+      </div>
+
+      <div class="notice">
+        <div class="notice-label">ระวัง CIDR overlap</div>
+        <p>ถ้า AIS มี VCN/VNet อื่นที่อาจ peer กับนี้ในอนาคต · เลือก CIDR <strong>10.30.0.0/16</strong> ที่ไม่ชนกับ Prod (10.20.0.0/16) และ AIS on-prem</p>
+      </div>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -709,6 +1161,13 @@ export SG_OCID=$(oci network service-gateway create \
         <div class="goal-label">เป้าหมาย</div>
         <div class="goal-text">Public LB Fixed 10 Mbps · WAF Detection mode · public IP พร้อม route ไป OKE</div>
       </div>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>3.1 Public IP + Load Balancer</h2>
 
@@ -783,6 +1242,182 @@ export WAF_OCID=$(oci waf web-app-firewall-policy create \
   --query "data.{state:\"lifecycle-state\",shape:\"shape-name\",ip:\"ip-addresses\"[0].\"ip-address\"}" --output table</pre></div>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>3.1 Load Balancer (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Networking</code> → <code>Load Balancers</code></li>
+        <li>เลือก compartment <code>compartment-nonprod-aisXXXX</code> ใน left panel</li>
+        <li>คลิก <strong>Create Load Balancer</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.1a-lb-list-create-button.png"
+               alt="OCI Console — Load Balancers list with Create button"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.1a-lb-list-create-button.png</code>
+            <div class="placeholder-hint">Capture: Load Balancers list page, Create Load Balancer button highlighted.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.1a</span> Load Balancers list → Create</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>Step 1 (Add Details):</strong>
+          <ul>
+            <li><strong>Type:</strong> <code>Load balancer</code> (not Network LB)</li>
+            <li><strong>Name:</strong> <code>lb-nonprod-aisXXXX</code></li>
+            <li><strong>Visibility:</strong> <code>Public</code></li>
+            <li><strong>Shape:</strong> <code>Small (10 Mbps fixed)</code></li>
+            <li><strong>VCN:</strong> <code>vcn-nonprod-aisXXXX</code></li>
+            <li><strong>Subnet:</strong> <code>public-lb</code> (10.30.0.0/24)</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.1b-lb-create-form-details.png"
+               alt="OCI Console — Create LB step 1 Add Details"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.1b-lb-create-form-details.png</code>
+            <div class="placeholder-hint">Capture: Add Details step with Name, Public visibility, 10Mbps fixed shape selected, VCN + public-lb subnet.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.1b</span> Create LB · Step 1 · Add Details</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>Step 2 (Backends):</strong> ปล่อยว่างก่อน — เราจะกลับมาเพิ่ม OKE backends หลัง deploy workload ใน Step 10</li>
+        <li><strong>Step 3 (Listener):</strong> Name <code>http-listener</code> · Type <code>HTTP</code> · Port <code>80</code> (เปลี่ยนเป็น HTTPS+TLS ตอน production)</li>
+        <li><strong>Step 4 (Logging):</strong> เปิด error + access log ทั้งคู่</li>
+        <li>คลิก <strong>Submit</strong> → รอ ~3 นาที จน State = <code>Active</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.1c-lb-listener.png"
+               alt="OCI Console — Create LB step 3 Listener"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.1c-lb-listener.png</code>
+            <div class="placeholder-hint">Capture: Listener step with HTTP/80 listener configured.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.1c</span> Create LB · Step 3 · Listener (HTTP/80)</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.1d-lb-active-with-ip.png"
+               alt="OCI Console — Load Balancer Active with public IP"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.1d-lb-active-with-ip.png</code>
+            <div class="placeholder-hint">Capture: LB detail page after creation — State Active, public IP shown. Note the IP for env vars / DNS.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.1d</span> ✓ LB Active · note the public IP</figcaption>
+      </figure>
+
+      <h2>3.2 WAF Policy (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Identity &amp; Security</code> → <code>Web Application Firewall</code> → <code>Policies</code></li>
+        <li>คลิก <strong>Create WAF Policy</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.2a-waf-policies-list.png"
+               alt="OCI Console — WAF Policies list"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.2a-waf-policies-list.png</code>
+            <div class="placeholder-hint">Capture: WAF Policies list page, Create WAF Policy button visible.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2a</span> Identity &amp; Security → WAF → Policies → Create</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>กรอกฟอร์ม:
+          <ul>
+            <li><strong>Name:</strong> <code>waf-nonprod-aisXXXX</code></li>
+            <li><strong>Compartment:</strong> compartment-nonprod-aisXXXX</li>
+          </ul>
+        </li>
+        <li><strong>Request Protection:</strong> Add Action <code>Log Only</code> · Add Rule based on OWASP CRS · เลือก rules: <code>920170</code>, <code>942100</code>, <code>941100</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.2b-waf-actions-log-only.png"
+               alt="OCI Console — WAF Policy actions, Log Only"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.2b-waf-actions-log-only.png</code>
+            <div class="placeholder-hint">Capture: Actions tab with a “Log Only” action of type Return HTTP Response (200) defined.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2b</span> Actions → Log Only (Detection mode)</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.2c-waf-owasp-rules.png"
+               alt="OCI Console — WAF Request Protection OWASP rules"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.2c-waf-owasp-rules.png</code>
+            <div class="placeholder-hint">Capture: Request Protection tab with the 3 OWASP CRS rules (920170, 942100, 941100) added and action = Log Only.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2c</span> Request Protection — OWASP CRS rules in Log Only mode</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>Firewalls:</strong> Add Firewall → เลือก Load Balancer <code>lb-nonprod-aisXXXX</code> ที่สร้างไว้</li>
+        <li>คลิก <strong>Create WAF Policy</strong> → รอ State = <code>Active</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-3.2d-waf-attach-firewall.png"
+               alt="OCI Console — WAF policy attach to Load Balancer"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-3.2d-waf-attach-firewall.png</code>
+            <div class="placeholder-hint">Capture: Firewalls tab of WAF policy with the LB selected as enforcement point.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2d</span> Attach WAF policy to Load Balancer</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -805,6 +1440,13 @@ export WAF_OCID=$(oci waf web-app-firewall-policy create \
         <div class="goal-label">เป้าหมาย</div>
         <div class="goal-text">OKE cluster k8s 1.29 · single AD · auto-scale 1-3 nodes · VCN-native pod networking</div>
       </div>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>4.1 สร้าง OKE Cluster</h2>
 
@@ -882,6 +1524,154 @@ kubectl get nodes -L oci.oraclecloud.com/fault-domain</pre></div>
 <pre>kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"  "}{.status.nodeInfo.osImage}{"\n"}{end}'</pre></div>
         <p>คาดว่าเห็น node 1 ตัว · OS = Oracle Linux 8</p>
       </div>
+
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>4.1 OKE Cluster (Console GUI · Quick Create)</h2>
+
+      <p>OCI Console มี <strong>Quick Create</strong> สำหรับ OKE ที่สร้าง cluster + node pool + VCN ในขั้นตอนเดียว · เราจะใช้ <strong>Custom Create</strong> แทนเพื่อให้ใช้ VCN ที่สร้างไว้ใน Step 2</p>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Developer Services</code> → <code>Kubernetes Clusters (OKE)</code></li>
+        <li>เลือก compartment <code>compartment-nonprod-aisXXXX</code> · คลิก <strong>Create Cluster</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-4.1a-oke-list-create.png"
+               alt="OCI Console — OKE clusters list with Create button"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-4.1a-oke-list-create.png</code>
+            <div class="placeholder-hint">Capture: Kubernetes Clusters list page with Create Cluster button.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1a</span> Developer Services → OKE → Create Cluster</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>เลือก <strong>Custom Create</strong> → คลิก <strong>Submit</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-4.1b-oke-create-mode-custom.png"
+               alt="OCI Console — Create Cluster mode picker, Custom selected"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-4.1b-oke-create-mode-custom.png</code>
+            <div class="placeholder-hint">Capture: Cluster type picker with “Custom Create” selected (vs Quick Create).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1b</span> Pick Custom Create</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>Cluster Details:</strong>
+          <ul>
+            <li><strong>Name:</strong> <code>oke-nonprod-aisXXXX</code></li>
+            <li><strong>Kubernetes Version:</strong> <code>v1.29.1</code></li>
+            <li><strong>Kubernetes API endpoint subnet:</strong> public-lb subnet</li>
+            <li>✓ <strong>Assign a public IP address to the Kubernetes API endpoint</strong></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-4.1c-oke-cluster-details.png"
+               alt="OCI Console — Create Cluster details form"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-4.1c-oke-cluster-details.png</code>
+            <div class="placeholder-hint">Capture: cluster name + k8s version + endpoint subnet + public IP checkbox filled.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1c</span> Cluster Details · public endpoint enabled</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>Node Pool:</strong>
+          <ul>
+            <li><strong>Name:</strong> <code>pool-nonprod</code></li>
+            <li><strong>Compartment:</strong> compartment-nonprod-aisXXXX</li>
+            <li><strong>Node type:</strong> <code>Managed</code></li>
+            <li><strong>Placement (AD):</strong> เลือก <code>AD-1</code> เท่านั้น</li>
+            <li><strong>Worker node subnet:</strong> <code>oke-nodes</code> (10.30.1.0/24)</li>
+            <li><strong>Shape:</strong> <code>VM.Standard.E4.Flex</code> · 1 OCPU · 4 GB</li>
+            <li><strong>Image:</strong> Oracle Linux 8.10 (latest)</li>
+            <li><strong>Node count:</strong> 1</li>
+            <li><strong>SSH key:</strong> วาง public key จาก <code>~/.ssh/oke_nonprod_rsa.pub</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-4.1d-oke-nodepool-form.png"
+               alt="OCI Console — Node Pool form filled"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-4.1d-oke-nodepool-form.png</code>
+            <div class="placeholder-hint">Capture: Node Pool form with AD-1, E4.Flex 1 OCPU/4 GB, node count 1, oke-nodes subnet, OL 8.10 image.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1d</span> Node Pool · 1 OCPU / 4 GB / 1 node</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="6">
+        <li>คลิก <strong>Next</strong> → Review → <strong>Create Cluster</strong></li>
+        <li>รอ ~10 นาที จน <code>Cluster status = Active</code> และ <code>Node Pool status = Active</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-4.1e-oke-active.png"
+               alt="OCI Console — OKE cluster Active with 1 node"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-4.1e-oke-active.png</code>
+            <div class="placeholder-hint">Capture: cluster detail page showing Active state and Nodes tab with 1 worker in Ready state.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1e</span> ✓ Cluster Active · 1 worker Ready</figcaption>
+      </figure>
+
+      <h2>4.3 Get kubectl Config (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>ที่ cluster detail page → คลิก <strong>Access Cluster</strong> ปุ่มมุมขวาบน</li>
+        <li>เลือก <strong>Local Access</strong> tab → copy คำสั่ง <code>oci ce cluster create-kubeconfig ...</code> ลงไปรันใน terminal</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-4.3a-access-cluster-dialog.png"
+               alt="OCI Console — Access Cluster dialog Local Access tab"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-4.3a-access-cluster-dialog.png</code>
+            <div class="placeholder-hint">Capture: “Access Your Cluster” dialog, Local Access tab visible with the create-kubeconfig command. Redact any tenancy OCIDs.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.3a</span> Access Cluster → Local Access · copy kubeconfig command</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
 
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
@@ -1018,6 +1808,13 @@ kubectl get gatewayclasses</pre></div>
         <p>Non-Prod ใช้ <strong>single instance</strong> ไม่มี standby · ถ้า AD ล่มหรือ maintenance · DB จะดาวน์ ~5-15 นาที · ยอมรับได้สำหรับ dev/qa · <strong>ห้ามใช้ pattern นี้ใน Prod</strong></p>
       </div>
 
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
+
       <h2>6.1 Private Data Subnet</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
@@ -1087,6 +1884,134 @@ echo "PG endpoint: $PG_FQDN"
   --query "data.{name:\"display-name\",state:\"lifecycle-state\",version:\"db-version\",shape:shape}" --output table</pre></div>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>6.2 PostgreSQL DB System (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Databases</code> → <code>PostgreSQL</code> → <code>DB Systems</code></li>
+        <li>เลือก compartment <code>compartment-nonprod-aisXXXX</code> · คลิก <strong>Create PostgreSQL DB System</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-6.2a-pg-list-create.png"
+               alt="OCI Console — PostgreSQL DB Systems list"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-6.2a-pg-list-create.png</code>
+            <div class="placeholder-hint">Capture: PostgreSQL DB Systems list page, Create button visible.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.2a</span> Databases → PostgreSQL → Create DB System</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li><strong>Basic Information:</strong>
+          <ul>
+            <li><strong>Name:</strong> <code>pg-nonprod-aisXXXX</code></li>
+            <li><strong>PostgreSQL version:</strong> <code>16</code></li>
+            <li><strong>Configuration:</strong> Default</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-6.2b-pg-basic-info.png"
+               alt="OCI Console — Create PG · Basic Info"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-6.2b-pg-basic-info.png</code>
+            <div class="placeholder-hint">Capture: Basic Information section with name + PG 16.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.2b</span> Basic Info — name + PG 16</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>Instance configuration:</strong>
+          <ul>
+            <li><strong>Shape:</strong> <code>VM.Standard.E4.Flex</code> · 2 OCPUs · 8 GB memory</li>
+            <li><strong>Instance count:</strong> 1 (Non-Prod = no HA)</li>
+            <li><strong>Storage:</strong> 100 GB · OCI Optimized · single AD</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-6.2c-pg-shape-storage.png"
+               alt="OCI Console — Create PG · Shape + Storage"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-6.2c-pg-shape-storage.png</code>
+            <div class="placeholder-hint">Capture: shape picker (E4.Flex 2 OCPU/8 GB), instance count = 1, storage = 100 GB.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.2c</span> Shape · 2 OCPU/8 GB · 1 instance · 100 GB storage</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>Networking:</strong>
+          <ul>
+            <li><strong>VCN:</strong> vcn-nonprod-aisXXXX</li>
+            <li><strong>Subnet:</strong> <code>private-data</code> (10.30.10.0/24)</li>
+          </ul>
+        </li>
+        <li><strong>Administrator credentials:</strong>
+          <ul>
+            <li><strong>Username:</strong> <code>pgadmin</code></li>
+            <li><strong>Password:</strong> ใช้ที่ generate จาก <code>openssl rand</code> · save ใน Vault (Step 9)</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-6.2d-pg-network-creds.png"
+               alt="OCI Console — Create PG · Network + Credentials"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-6.2d-pg-network-creds.png</code>
+            <div class="placeholder-hint">Capture: Network section with VCN + private-data subnet, plus Admin credentials section. <strong>Blur the password field.</strong></div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.2d</span> Network + Credentials (blur password!)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="7">
+        <li>คลิก <strong>Create PostgreSQL DB System</strong> → รอ ~10 นาที จน State = <code>Active</code></li>
+        <li>เมื่อ active แล้ว → คลิก DB system → copy <strong>Primary endpoint (private IP)</strong> ออกมา</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-6.2e-pg-active-endpoint.png"
+               alt="OCI Console — PG DB System Active with primary endpoint"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-6.2e-pg-active-endpoint.png</code>
+            <div class="placeholder-hint">Capture: DB system detail showing Active state and the private IP endpoint. Crop to hide tenancy OCID.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.2e</span> ✓ PG Active · note the private IP endpoint</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -1109,6 +2034,13 @@ echo "PG endpoint: $PG_FQDN"
         <div class="goal-label">เป้าหมาย</div>
         <div class="goal-text">Valkey 8.1 single-node ready · accessible via private VCN endpoint</div>
       </div>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>7.1 สร้าง OCI Cache Cluster</h2>
 
@@ -1155,6 +2087,81 @@ echo "Cache endpoint: $CACHE_ENDPOINT:6379"</pre></div>
   --query "data.{name:\"display-name\",state:\"lifecycle-state\",version:\"software-version\",endpoint:\"primary-fqdn\"}" --output table</pre></div>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>7.1 OCI Cache Cluster (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Databases</code> → <code>Caches</code> → <code>OCI Cache</code></li>
+        <li>เลือก compartment · คลิก <strong>Create Cache Cluster</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-7.1a-cache-list-create.png"
+               alt="OCI Console — Cache clusters list"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-7.1a-cache-list-create.png</code>
+            <div class="placeholder-hint">Capture: OCI Cache clusters list with Create button visible.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">7.1a</span> Databases → Caches → Create Cache Cluster</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>กรอกฟอร์ม:
+          <ul>
+            <li><strong>Name:</strong> <code>cache-nonprod-aisXXXX</code></li>
+            <li><strong>Software:</strong> <code>Valkey 8.1</code></li>
+            <li><strong>Cluster mode:</strong> <code>Non-clustered</code></li>
+            <li><strong>Shard count:</strong> 1 · <strong>Node count:</strong> 1 (Non-Prod)</li>
+            <li><strong>Node memory:</strong> 4 GB</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-7.1b-cache-config-form.png"
+               alt="OCI Console — Create Cache config"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-7.1b-cache-config-form.png</code>
+            <div class="placeholder-hint">Capture: Create Cache form with Valkey 8.1, non-clustered, 1 shard / 1 node / 4 GB.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">7.1b</span> Cache config — Valkey 8.1 · 1 node · 4 GB</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>Networking:</strong> VCN <code>vcn-nonprod-aisXXXX</code> · Subnet <code>private-data</code></li>
+        <li>คลิก <strong>Create</strong> → รอ ~5 นาที จน State = <code>Active</code> → copy <strong>Primary FQDN</strong></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-7.1c-cache-active-fqdn.png"
+               alt="OCI Console — Cache Active with FQDN"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-7.1c-cache-active-fqdn.png</code>
+            <div class="placeholder-hint">Capture: Cache cluster detail page with Active state and Primary FQDN (used as Redis endpoint by apps).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">7.1c</span> ✓ Cache Active · note Primary FQDN (port 6379)</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -1177,6 +2184,13 @@ echo "Cache endpoint: $CACHE_ENDPOINT:6379"</pre></div>
         <div class="goal-label">เป้าหมาย</div>
         <div class="goal-text">Stream pool dedicated for Non-Prod · 3 streams: queue.events, integration.events, notification.requests</div>
       </div>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>8.1 สร้าง Stream Pool</h2>
 
@@ -1223,6 +2237,92 @@ oci streaming admin stream list \
   --query "data.{name:name,state:\"lifecycle-state\"}" --output table</pre></div>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>8.1 Stream Pool (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Analytics &amp; AI</code> → <code>Messaging</code> → <code>Streaming</code> → <code>Stream Pools</code></li>
+        <li>คลิก <strong>Create Stream Pool</strong> → Name <code>stream-nonprod-aisXXXX</code> → Create</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-8.1a-stream-pool-create.png"
+               alt="OCI Console — Create Stream Pool"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-8.1a-stream-pool-create.png</code>
+            <div class="placeholder-hint">Capture: Create Stream Pool dialog with name field filled.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.1a</span> Streaming → Stream Pools → Create</figcaption>
+      </figure>
+
+      <h2>8.2 Streams (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เมื่อ pool Active แล้ว → คลิก pool name → ที่ <strong>Resources</strong> sidebar → <strong>Streams</strong></li>
+        <li>คลิก <strong>Create Stream</strong> 3 ครั้ง (queue.events / integration.events / notification.requests) · แต่ละครั้ง:
+          <ul>
+            <li><strong>Name:</strong> ตามชื่อ stream</li>
+            <li><strong>Partitions:</strong> 2</li>
+            <li><strong>Retention:</strong> 72 hours</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-8.2a-stream-create-form.png"
+               alt="OCI Console — Create Stream form"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-8.2a-stream-create-form.png</code>
+            <div class="placeholder-hint">Capture: Create Stream form with Name=queue.events, Partitions=2, Retention=72h, Pool selected.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.2a</span> Create Stream · 2 partitions · 72 h retention</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-8.2b-streams-list-3.png"
+               alt="OCI Console — Stream pool with 3 streams"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-8.2b-streams-list-3.png</code>
+            <div class="placeholder-hint">Capture: Stream Pool detail → Streams tab showing all 3 streams in Active state.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.2b</span> ✓ 3 streams Active in the pool</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-8.2c-kafka-conn-settings.png"
+               alt="OCI Console — Stream Pool Kafka Connection Settings"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-8.2c-kafka-conn-settings.png</code>
+            <div class="placeholder-hint">Capture: Stream Pool → Kafka Connection Settings page (bootstrap server + SASL/PLAIN username pattern). Redact tenancy name in screenshot.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.2c</span> Kafka Connection Settings · used by app config</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -1240,6 +2340,13 @@ oci streaming admin stream list \
 
       <h1>Object Storage + OCI Vault</h1>
       <p class="lead">Object Storage buckets (uploads/media/backups) + OCI Vault สำหรับเก็บ secrets</p>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>9.1 สร้าง Object Storage Buckets</h2>
 
@@ -1296,6 +2403,120 @@ export KEY_OCID=$(oci kms management key create \
         <div class="code-wrap"><button class="copy-btn">Copy</button>
 <pre>oci vault secret list --compartment-id $COMPARTMENT_OCID --output table</pre></div>
       </div>
+
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>9.1 Object Storage Buckets (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Storage</code> → <code>Object Storage &amp; Archive Storage</code> → <code>Buckets</code></li>
+        <li>คลิก <strong>Create Bucket</strong> 3 ครั้ง — สำหรับ <code>queue-nonprod-aisXXXX-uploads</code>, <code>-public-media</code>, <code>-backups</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-9.1a-buckets-create-form.png"
+               alt="OCI Console — Create Bucket form"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-9.1a-buckets-create-form.png</code>
+            <div class="placeholder-hint">Capture: Create Bucket dialog with name, storage tier = Standard, visibility = Private.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.1a</span> Create Bucket (3 buckets total)</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-9.1b-buckets-list-3.png"
+               alt="OCI Console — 3 buckets in compartment"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-9.1b-buckets-list-3.png</code>
+            <div class="placeholder-hint">Capture: Buckets list showing all 3 buckets in the compartment.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.1b</span> ✓ 3 buckets created</figcaption>
+      </figure>
+
+      <h2>9.2 Vault + Master Key (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>เปิด <code>☰</code> → <code>Identity &amp; Security</code> → <code>Vault</code></li>
+        <li>คลิก <strong>Create Vault</strong> → Name <code>vault-nonprod-aisXXXX</code> · Type <code>Default</code> → Create</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-9.2a-vault-create-form.png"
+               alt="OCI Console — Create Vault form"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-9.2a-vault-create-form.png</code>
+            <div class="placeholder-hint">Capture: Create Vault dialog, type = Default, name filled.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.2a</span> Identity &amp; Security → Vault → Create Vault</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>เมื่อ vault Active แล้ว → คลิก vault → <strong>Master Encryption Keys</strong> → <strong>Create Key</strong></li>
+        <li>กรอก: Name <code>key-nonprod</code> · Protection mode <code>Software</code> · Algorithm <code>AES</code> · Length <code>256 bits</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-9.2b-master-key-create.png"
+               alt="OCI Console — Create Master Key form"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-9.2b-master-key-create.png</code>
+            <div class="placeholder-hint">Capture: Create Master Key form — AES-256, Software protection.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.2b</span> Master Key · AES-256 · Software protection</figcaption>
+      </figure>
+
+      <h2>9.3 Store Secrets (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>ที่ vault detail → <strong>Resources</strong> sidebar → <strong>Secrets</strong> → <strong>Create Secret</strong></li>
+        <li>กรอก:
+          <ul>
+            <li><strong>Name:</strong> <code>pg-dsn-nonprod</code></li>
+            <li><strong>Encryption Key:</strong> <code>key-nonprod</code></li>
+            <li><strong>Secret type:</strong> Plain-text</li>
+            <li><strong>Secret contents:</strong> <code>host=...;user=pgadmin;password=...;dbname=queue;sslmode=require</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/nonprod/nonprod-9.3a-secret-create.png"
+               alt="OCI Console — Create Secret dialog"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">nonprod/nonprod-9.3a-secret-create.png</code>
+            <div class="placeholder-hint">Capture: Create Secret form. <strong>BLUR/REDACT the contents field</strong> — never publish real DSN+password screenshots.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.3a</span> Create Secret (BLUR password field!)</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
 
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
@@ -1627,6 +2848,28 @@ echo "Teardown complete — cost stops in ~5 minutes"</pre></div>
     const n = parseInt(queryStep, 10);
     if (!isNaN(n)) currentStep = Math.max(0, Math.min(totalSteps - 1, n));
   }
+
+  // CLI / Console GUI track switcher
+  function applyTrack(track) {
+    document.querySelectorAll('.step-page').forEach(step => {
+      step.querySelectorAll(':scope > .track-tabs .tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.track === track);
+      });
+      step.querySelectorAll(':scope > .track-panel').forEach(p => {
+        p.classList.toggle('active', p.classList.contains(track));
+      });
+    });
+    try { localStorage.setItem('codelab-track-pref', track); } catch {}
+  }
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('tab-btn') && e.target.dataset.track) {
+      applyTrack(e.target.dataset.track);
+    }
+  });
+  try {
+    const pref = localStorage.getItem('codelab-track-pref');
+    if (pref === 'gui') applyTrack('gui');
+  } catch {}
 
   showStep(currentStep);
 </script>

@@ -217,6 +217,90 @@
 
   .prod-vs-nonprod { background: #fef5f4; border: 1px solid rgba(199,70,52,0.2); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13.5px; }
   .prod-vs-nonprod strong { color: #C74634; }
+
+  /* CLI / Console GUI track switcher */
+  .track-tabs {
+    display: flex; gap: 0; margin: 18px 0 22px;
+    border: 1px solid #e0e4e9; border-radius: 8px; overflow: hidden;
+    background: #f4f6f8;
+    font-size: 13.5px;
+  }
+  .tab-btn {
+    flex: 1; padding: 11px 18px; background: transparent; color: #4a5260;
+    border: none; cursor: pointer; font-family: inherit; font-weight: 600;
+    font-size: 13.5px; transition: background 0.15s, color 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-right: 1px solid #e0e4e9;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn:hover { background: #ffffff; color: #1a1f29; }
+  .tab-btn.active { background: #ffffff; color: #C74634; box-shadow: inset 0 -3px 0 #C74634; }
+  .track-panel { display: none; }
+  .track-panel.active { display: block; }
+  .track-panel.gui h2 { color: #1a1f29; }
+
+  .gui-shot {
+    margin: 16px 0 22px; padding: 0;
+    border: 1px solid #e0e4e9; border-radius: 10px; overflow: hidden;
+    background: #ffffff;
+  }
+  .shot-frame {
+    position: relative; background: #f8fafc;
+    border-bottom: 1px solid #e0e4e9;
+    min-height: 80px;
+  }
+  .shot-frame img {
+    display: block; width: 100%; height: auto; max-height: 720px;
+    object-fit: contain; background: #ffffff;
+  }
+  .shot-placeholder {
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 24px; gap: 8px; text-align: center;
+    background: repeating-linear-gradient(135deg, #fef5f4 0, #fef5f4 14px, #fdebe9 14px, #fdebe9 28px);
+    color: #4a5260;
+  }
+  .shot-frame.missing img { display: none; }
+  .shot-frame.missing .shot-placeholder { display: flex; }
+  .placeholder-icon { font-size: 28px; line-height: 1; }
+  .placeholder-title { font-weight: 700; color: #C74634; font-size: 14px; letter-spacing: 0.3px; }
+  .placeholder-file { background: #ffffff; color: #be185d; padding: 4px 10px; border-radius: 4px;
+    border: 1px solid #e0e4e9; font-size: 12px; font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .placeholder-hint { font-size: 12.5px; color: #4a5260; max-width: 520px; line-height: 1.5; }
+  .gui-shot figcaption {
+    padding: 10px 14px; font-size: 13.5px; color: #1a1f29;
+    display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;
+  }
+  .shot-id {
+    flex-shrink: 0; background: #C74634; color: #ffffff; font-weight: 700;
+    font-size: 11.5px; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.3px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    align-self: center;
+  }
+  .gui-shot .annotate {
+    flex-basis: 100%; margin-top: 4px; font-size: 12.5px; color: #7a8595;
+  }
+  .gui-shot .annotate summary {
+    cursor: pointer; user-select: none; color: #C74634; font-weight: 600;
+  }
+  .gui-shot .annotate[open] summary { margin-bottom: 4px; }
+
+  .gui-steps { counter-reset: gui-step; padding-left: 0; list-style: none; margin: 14px 0; }
+  .gui-steps > li {
+    counter-increment: gui-step;
+    position: relative; padding: 10px 12px 10px 44px; margin: 8px 0;
+    background: #ffffff; border: 1px solid #e0e4e9; border-radius: 8px;
+    color: #1a1f29; line-height: 1.65;
+  }
+  .gui-steps > li::before {
+    content: counter(gui-step); position: absolute; left: 12px; top: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #C74634; color: #ffffff; font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gui-steps strong { color: #1a1f29; }
+  .gui-steps code { background: #f1f5f9 !important; color: #be185d !important;
+    padding: 2px 7px; border-radius: 3px; font-size: 12.5px;
+    font-family: "SF Mono", Menlo, Consolas, monospace; border: 1px solid #e2e8f0; }
 </style>
 </head>
 <body>
@@ -609,6 +693,13 @@ echo "Prod Suffix: $SUFFIX"
         <div class="goal-text">Compartment "prod" + VCN with Multi-AD subnets · NSGs · Service Gateway · ready for OKE/DB/Cache</div>
       </div>
 
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
+
       <h2>2.1 Create Compartment</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
@@ -673,6 +764,186 @@ oci network nsg create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "n
         <p>OCI Network Security Groups (NSG) ดีกว่า security list เพราะ: (1) ผูกกับ vNIC เฉพาะ · (2) ไม่ผูกกับ subnet · (3) สามารถ reference NSG อื่นเป็น source (เช่น "DB NSG allows traffic from OKE NSG only") · Prod แนะนำใช้ NSG</p>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>2.1 Create Compartment (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Identity &amp; Security</code> → <code>Compartments</code> → <strong>Create Compartment</strong></li>
+        <li>Name <code>compartment-prod-aisXXXX</code> · Description "Production environment for AIS MMT-RFP" · Parent <code>(root)</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.1a-compartment-create.png"
+               alt="OCI Console — Create Prod compartment"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.1a-compartment-create.png</code>
+            <div class="placeholder-hint">Capture: Create Compartment dialog filled for production.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.1a</span> Create prod compartment</figcaption>
+      </figure>
+
+      <h2>2.2 VCN with Multi-AD Subnets (Console GUI)</h2>
+
+      <p>สำหรับ Prod เราจะ <strong>ไม่ใช้ VCN Wizard</strong> เพราะ wizard สร้าง subnet เป็น public + private 2 subnets · เราต้องการ 4 regional subnets ที่ออกแบบเอง · จะสร้าง VCN ก่อน แล้วเพิ่ม gateway + subnets ทีละชิ้น</p>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Networking</code> → <code>Virtual Cloud Networks</code> → <strong>Create VCN</strong> (ไม่ใช่ wizard)</li>
+        <li>Name <code>vcn-prod-aisXXXX</code> · CIDR <code>10.20.0.0/16</code> · DNS Label <code>vcnprodaisXXXX</code> · ✓ Use DNS Hostnames</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.2a-vcn-create-basic.png"
+               alt="OCI Console — Create VCN (basic, not wizard)"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.2a-vcn-create-basic.png</code>
+            <div class="placeholder-hint">Capture: Create VCN (non-wizard) form with CIDR 10.20.0.0/16 and DNS label.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.2a</span> Create VCN — CIDR 10.20.0.0/16 (no wizard)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>ที่ VCN detail → <strong>Internet Gateways</strong> → Create IGW <code>igw-prod</code></li>
+        <li>→ <strong>NAT Gateways</strong> → Create NAT <code>nat-prod</code></li>
+        <li>→ <strong>Service Gateways</strong> → Create SG <code>sg-prod</code> (Services = All <region> Services in Oracle Services Network)</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.2b-gateways-3-created.png"
+               alt="OCI Console — VCN gateways list (IGW, NAT, SG)"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.2b-gateways-3-created.png</code>
+            <div class="placeholder-hint">Capture: VCN detail page showing all 3 gateways present (IGW, NAT, SG) in Available state.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.2b</span> 3 gateways created (IGW + NAT + SG)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="6">
+        <li>→ <strong>Route Tables</strong> → Create 2 route tables:
+          <ul>
+            <li><code>rt-public</code> — route 0.0.0.0/0 → IGW</li>
+            <li><code>rt-private</code> — route 0.0.0.0/0 → NAT · plus Oracle Services route → SG</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.2c-route-tables.png"
+               alt="OCI Console — Route tables with public/private rules"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.2c-route-tables.png</code>
+            <div class="placeholder-hint">Capture: Route Tables list with rt-public, rt-private rows + expanded rule list for one of them.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.2c</span> Route tables — public + private</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="7">
+        <li>→ <strong>Subnets</strong> → Create Subnet 4 ครั้ง (all <code>Regional</code>):
+          <ul>
+            <li><code>public-lb</code> 10.20.0.0/24 · Public · rt-public</li>
+            <li><code>oke-nodes</code> 10.20.1.0/22 · Private · rt-private</li>
+            <li><code>oke-pods</code> 10.20.8.0/21 · Private · rt-private</li>
+            <li><code>private-data</code> 10.20.16.0/24 · Private · rt-private</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.2d-create-subnet-regional.png"
+               alt="OCI Console — Create regional subnet form"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.2d-create-subnet-regional.png</code>
+            <div class="placeholder-hint">Capture: Create Subnet panel with Subnet Type = Regional clearly selected.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.2d</span> Each subnet · Regional type · correct route table</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.2e-subnets-4-final.png"
+               alt="OCI Console — 4 regional subnets created"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.2e-subnets-4-final.png</code>
+            <div class="placeholder-hint">Capture: Subnets list with all 4 (public-lb, oke-nodes, oke-pods, private-data) Available.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.2e</span> ✓ 4 regional subnets Available</figcaption>
+      </figure>
+
+      <h2>2.3 NSGs (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li>ที่ VCN detail → <strong>Network Security Groups</strong> → <strong>Create NSG</strong> 3 ครั้ง:
+          <ul>
+            <li><code>nsg-oke-workers</code></li>
+            <li><code>nsg-db</code> · Ingress rule: source = <code>nsg-oke-workers</code> NSG · TCP 5432</li>
+            <li><code>nsg-cache</code> · Ingress rule: source = <code>nsg-oke-workers</code> NSG · TCP 6379</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.3a-nsg-ingress-rule.png"
+               alt="OCI Console — NSG Ingress rule with NSG source"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.3a-nsg-ingress-rule.png</code>
+            <div class="placeholder-hint">Capture: Add Ingress Rule form on nsg-db showing Source Type = NSG and Source NSG = nsg-oke-workers.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.3a</span> NSG ingress rule · source = another NSG (Prod pattern)</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-2.3b-nsgs-3-list.png"
+               alt="OCI Console — 3 NSGs created"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-2.3b-nsgs-3-list.png</code>
+            <div class="placeholder-hint">Capture: NSGs list under the VCN showing the 3 created NSGs.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">2.3b</span> ✓ 3 NSGs created (workers · db · cache)</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -690,6 +961,13 @@ oci network nsg create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "n
 
       <h1>OCI WAF (Prevention) + Load Balancer (Flexible)</h1>
       <p class="lead">Production-grade edge: WAF in Prevention mode + Bot Management · Flexible LB 10-8000 Mbps</p>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>3.1 Flexible Load Balancer (auto-scale)</h2>
 
@@ -744,6 +1022,125 @@ oci waf web-app-firewall-policy create \
   --from-json file://waf-prod.json \
   --wait-for-state ACTIVE</pre></div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>3.1 Flexible Load Balancer (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Networking</code> → <code>Load Balancers</code> → <strong>Create Load Balancer</strong></li>
+        <li>Type <code>Load balancer</code> · Name <code>lb-prod-aisXXXX</code> · Visibility <code>Public</code></li>
+        <li><strong>Shape:</strong> <code>Flexible</code> · Min bandwidth <code>10 Mbps</code> · Max bandwidth <code>8000 Mbps</code></li>
+        <li>VCN <code>vcn-prod-aisXXXX</code> · Subnet <code>public-lb</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-3.1a-lb-flexible-shape.png"
+               alt="OCI Console — Create LB Flexible shape"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-3.1a-lb-flexible-shape.png</code>
+            <div class="placeholder-hint">Capture: Create LB form with Flexible shape selected and min/max bandwidth fields (10/8000 Mbps).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.1a</span> LB Flexible · 10–8000 Mbps</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>Step 3 (Listener):</strong> Type <code>HTTPS</code> · Port <code>443</code> · upload SSL certificate (cert + private key + chain — ใช้ cert ของ AIS)</li>
+        <li><strong>Step 4 (Logging):</strong> เปิด access + error logs ทั้งคู่ → ส่งไป Logging service</li>
+        <li>Submit → รอ ~3 นาที</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-3.1b-lb-listener-https.png"
+               alt="OCI Console — LB HTTPS Listener config"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-3.1b-lb-listener-https.png</code>
+            <div class="placeholder-hint">Capture: HTTPS Listener step with port 443 and SSL Certificate fields visible (do NOT show actual cert content).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.1b</span> HTTPS Listener · port 443 · cert upload</figcaption>
+      </figure>
+
+      <h2>3.2 WAF Policy — Prevention Mode (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Identity &amp; Security</code> → <code>WAF</code> → <code>Policies</code> → <strong>Create WAF Policy</strong></li>
+        <li>Name <code>waf-prod-aisXXXX</code></li>
+        <li><strong>Actions:</strong> Add 2 actions —
+          <ul>
+            <li><code>Block</code> · type <code>Return HTTP Response</code> · code <code>403</code></li>
+            <li><code>Challenge</code> · type <code>Check</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-3.2a-waf-actions-block.png"
+               alt="OCI Console — WAF Actions Block + Challenge"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-3.2a-waf-actions-block.png</code>
+            <div class="placeholder-hint">Capture: WAF Actions tab with both Block (403) and Challenge actions defined.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2a</span> WAF Actions · Block + Challenge</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>Request Protection:</strong> add OWASP CRS rule with action <code>Block</code> · include capabilities <code>920170</code>, <code>942100</code>, <code>941100</code></li>
+        <li><strong>Request Rate Limiting:</strong> add rule <code>rate-limit-per-ip</code> · 1000 requests / 60 sec · block 600 sec on trigger</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-3.2b-waf-rate-limit.png"
+               alt="OCI Console — WAF Request Rate Limiting rule"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-3.2b-waf-rate-limit.png</code>
+            <div class="placeholder-hint">Capture: Request Rate Limiting tab with rule configured (1000 req/60s, action block 600s).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2b</span> WAF Rate Limit · 1000 req/60s · block 600s</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="6">
+        <li><strong>Firewalls:</strong> Attach to <code>lb-prod-aisXXXX</code></li>
+        <li>Create → State = Active</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-3.2c-waf-attached-prevention.png"
+               alt="OCI Console — WAF Active attached to LB"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-3.2c-waf-attached-prevention.png</code>
+            <div class="placeholder-hint">Capture: WAF policy detail page with Mode = Prevention and the LB shown under Firewalls.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">3.2c</span> ✓ WAF Prevention · attached to Prod LB</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -761,6 +1158,13 @@ oci waf web-app-firewall-policy create \
 
       <h1>OKE Cluster — Multi-AD HA</h1>
       <p class="lead">2 OCPU/16 GB workers · 2-10 nodes auto-scale · spread across AD-1 + AD-2</p>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <h2>4.1 Create OKE Cluster (Production)</h2>
 
@@ -824,6 +1228,103 @@ helm install cluster-autoscaler autoscaler/cluster-autoscaler \
 <pre>kubectl get nodes -L oci.oraclecloud.com/fault-domain,topology.kubernetes.io/zone</pre></div>
         <p>คาดว่าเห็น nodes ใน <strong>2 zones</strong> (AD-1 + AD-2)</p>
       </div>
+
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>4.1 OKE Cluster — Multi-AD (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Developer Services</code> → <code>Kubernetes Clusters (OKE)</code> → <strong>Create Cluster</strong> → <strong>Custom Create</strong></li>
+        <li><strong>Cluster Details:</strong>
+          <ul>
+            <li>Name <code>oke-prod-aisXXXX</code> · K8s version <code>v1.29.1</code></li>
+            <li><strong>Network Type:</strong> <code>VCN-Native Pod Networking</code></li>
+            <li>API endpoint subnet: <code>public-lb</code> · ✓ public IP</li>
+            <li>Service LB subnet: <code>public-lb</code></li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-4.1a-oke-vcn-native-cni.png"
+               alt="OCI Console — OKE Custom Create with VCN-Native CNI"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-4.1a-oke-vcn-native-cni.png</code>
+            <div class="placeholder-hint">Capture: Cluster Details form with Network Type = <strong>VCN-Native Pod Networking</strong> selected.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1a</span> VCN-Native Pod Networking (CNI)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li><strong>Node Pool · Multi-AD spread:</strong>
+          <ul>
+            <li>Name <code>pool-prod-multiAD</code></li>
+            <li><strong>Placement:</strong> เลือก <strong>both AD-1 และ AD-2</strong></li>
+            <li>Worker node subnet: <code>oke-nodes</code> · Pod subnet: <code>oke-pods</code></li>
+            <li>Shape <code>VM.Standard.E4.Flex</code> · 2 OCPU · 16 GB</li>
+            <li>Node count: <strong>4</strong> (will balance 2 per AD)</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-4.1b-nodepool-multi-ad.png"
+               alt="OCI Console — Node Pool placement Multi-AD"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-4.1b-nodepool-multi-ad.png</code>
+            <div class="placeholder-hint">Capture: Node Pool placement section with BOTH AD-1 and AD-2 checkboxes ticked.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1b</span> Multi-AD placement · AD-1 + AD-2 selected</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-4.1c-nodepool-shape-16gb.png"
+               alt="OCI Console — Node Pool 2 OCPU/16GB"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-4.1c-nodepool-shape-16gb.png</code>
+            <div class="placeholder-hint">Capture: shape config showing E4.Flex 2 OCPU / 16 GB / 4 nodes total.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1c</span> Worker shape · 2 OCPU / 16 GB · 4 nodes</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li>Next → Review → <strong>Create Cluster</strong></li>
+        <li>รอ ~15 นาที · Cluster + Node Pool ทั้งคู่ Active</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-4.1d-oke-nodes-2-ads.png"
+               alt="OCI Console — OKE nodes spread across 2 ADs"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-4.1d-oke-nodes-2-ads.png</code>
+            <div class="placeholder-hint">Capture: OKE Nodes tab showing all 4 nodes Ready, with “Availability Domain” column showing 2 ADs (AD-1, AD-2 evenly distributed).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">4.1d</span> ✓ 4 nodes Ready · spread across 2 ADs</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
 
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
@@ -913,6 +1414,13 @@ EOF</pre></div>
         <p>HA pair มี <strong>sync replication</strong> ระหว่าง AD-1 (primary) และ AD-2 (standby) · <strong>RPO = 0</strong> · failover &lt; 60s · cost +~50% vs single instance</p>
       </div>
 
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
+
       <h2>6.1 Create HA Database System</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
@@ -959,6 +1467,103 @@ oci psql db-system create --from-json file://pg-prod-config.json --wait-for-stat
         <p><strong>instanceCount=2</strong> = HA pair (1 primary + 1 standby) · <strong>isRegionallyDurable=true</strong> = storage replicated cross-AD · backup retention 30 days · auto-promote standby on primary failure</p>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>6.1 PostgreSQL HA Pair (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Databases</code> → <code>PostgreSQL</code> → <strong>Create PostgreSQL DB System</strong></li>
+        <li>Name <code>pg-prod-aisXXXX</code> · Version 16</li>
+        <li><strong>Instance configuration:</strong>
+          <ul>
+            <li>Shape <code>VM.Standard.E4.Flex</code> · 4 OCPU · 16 GB</li>
+            <li><strong>Instance count: 2</strong> ← HA pair (Primary + Standby)</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-6.1a-pg-ha-instance-count-2.png"
+               alt="OCI Console — PG HA instance count 2"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-6.1a-pg-ha-instance-count-2.png</code>
+            <div class="placeholder-hint">Capture: PG create form with Instance count = 2 selected (highlighting the HA option vs Non-Prod's 1).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.1a</span> Instance count = 2 (HA pair)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="4">
+        <li><strong>Storage:</strong>
+          <ul>
+            <li>Storage type: <code>OCI Optimized Storage</code></li>
+            <li>Size: 256 GB · IOPS: 25,000</li>
+            <li>✓ <strong>Regionally Durable</strong> (สำคัญ — cross-AD replication)</li>
+          </ul>
+        </li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-6.1b-pg-regionally-durable.png"
+               alt="OCI Console — PG storage Regionally Durable enabled"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-6.1b-pg-regionally-durable.png</code>
+            <div class="placeholder-hint">Capture: Storage section with the “Regionally Durable” toggle clearly ON.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.1b</span> Regionally Durable storage (cross-AD)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="5">
+        <li><strong>Networking:</strong> VCN <code>vcn-prod-aisXXXX</code> · Subnet <code>private-data</code> · NSG <code>nsg-db</code></li>
+        <li><strong>Backup policy:</strong> Daily at 02:00 · Retention 30 days</li>
+        <li><strong>Maintenance window:</strong> Sunday 03:00</li>
+        <li>Admin credentials → Vault or strong generated password (blur in screenshots!)</li>
+        <li>Create → wait ~15 mins</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-6.1c-pg-backup-policy.png"
+               alt="OCI Console — PG Backup policy 30 days"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-6.1c-pg-backup-policy.png</code>
+            <div class="placeholder-hint">Capture: Backup section with Daily backup, 30-day retention, maintenance Sunday 03:00.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.1c</span> Backup · Daily · 30-day retention · Sun 03:00 maint</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-6.1d-pg-primary-standby.png"
+               alt="OCI Console — PG showing Primary + Standby instances"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-6.1d-pg-primary-standby.png</code>
+            <div class="placeholder-hint">Capture: DB System detail → Instances tab showing 2 rows, one labeled Primary (AD-1) and one Standby (AD-2).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">6.1d</span> ✓ Primary AD-1 + Standby AD-2</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -975,6 +1580,13 @@ oci psql db-system create --from-json file://pg-prod-config.json --wait-for-stat
       </div>
 
       <h1>OCI Cache (Valkey HA) — Primary + Replica</h1>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
 <pre>cat > cache-prod-config.json <<EOF
@@ -998,6 +1610,52 @@ oci cache cluster create --from-json file://cache-prod-config.json --wait-for-st
         <p>2 nodes = 1 primary + 1 replica · sync replication · auto-failover · cost ~$90/mo (vs Non-Prod single ~$35/mo)</p>
       </div>
 
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>Cache HA — Primary + Replica (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Databases</code> → <code>Caches</code> → <strong>Create Cache Cluster</strong></li>
+        <li>Name <code>cache-prod-aisXXXX</code> · Software <code>Valkey 8.1</code> · Cluster mode <code>Non-clustered</code></li>
+        <li><strong>Shard count: 1</strong> · <strong>Node count: 2</strong> ← HA (Primary + Replica) · Memory <code>8 GB</code></li>
+        <li>Networking: VCN prod · Subnet <code>private-data</code> · NSG <code>nsg-cache</code></li>
+        <li>Create → wait ~5 min</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-7.1a-cache-ha-2-nodes.png"
+               alt="OCI Console — Cache HA 2 nodes"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-7.1a-cache-ha-2-nodes.png</code>
+            <div class="placeholder-hint">Capture: Create Cache form with Node count = 2 (HA Primary + Replica), 8 GB memory.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">7.1a</span> Cache HA · Node count = 2 · 8 GB each</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-7.1b-cache-ha-active.png"
+               alt="OCI Console — Cache HA Active with 2 nodes"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-7.1b-cache-ha-active.png</code>
+            <div class="placeholder-hint">Capture: Cache detail page with Nodes tab showing 2 nodes (1 Primary, 1 Replica), Primary FQDN visible.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">7.1b</span> ✓ Cache Active · Primary + Replica</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
+
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
         <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
@@ -1015,6 +1673,13 @@ oci cache cluster create --from-json file://cache-prod-config.json --wait-for-st
 
       <h1>OCI Streaming — Production (Multi-AD)</h1>
 
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
+
       <div class="code-wrap"><button class="copy-btn">Copy</button>
 <pre>export POOL_OCID=$(oci streaming admin stream-pool create \
   -c $COMPARTMENT_OCID --name $STREAM_POOL --wait-for-state ACTIVE \
@@ -1028,6 +1693,77 @@ for STREAM in queue.events integration.events notification.requests ; do
     --name $STREAM --partitions 4 --retention-in-hours $RETENTION \
     --wait-for-state ACTIVE
 done</pre></div>
+
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>Stream Pool + Production Streams (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Analytics &amp; AI</code> → <code>Messaging</code> → <code>Streaming</code> → <code>Stream Pools</code> → <strong>Create Stream Pool</strong></li>
+        <li>Name <code>stream-prod-aisXXXX</code> → Create</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-8.1a-stream-pool-create.png"
+               alt="OCI Console — Stream Pool create"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-8.1a-stream-pool-create.png</code>
+            <div class="placeholder-hint">Capture: Create Stream Pool dialog filled for prod.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.1a</span> Create prod Stream Pool</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>Pool detail → <strong>Streams</strong> → Create Stream 3 ครั้ง ตาม table:</li>
+      </ol>
+
+      <table>
+        <thead><tr><th>Stream</th><th>Partitions</th><th>Retention</th></tr></thead>
+        <tbody>
+          <tr><td><code>queue.events</code></td><td>4</td><td>168 h (7 days)</td></tr>
+          <tr><td><code>integration.events</code></td><td>4</td><td><strong>720 h (30 days · AIS audit)</strong></td></tr>
+          <tr><td><code>notification.requests</code></td><td>4</td><td>168 h (7 days)</td></tr>
+        </tbody>
+      </table>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-8.2a-stream-integration-30day.png"
+               alt="OCI Console — integration.events stream with 30-day retention"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-8.2a-stream-integration-30day.png</code>
+            <div class="placeholder-hint">Capture: Create Stream form for integration.events with Retention = 720 hours (30 days).</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.2a</span> integration.events · 30-day retention (audit)</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-8.2b-streams-3-active.png"
+               alt="OCI Console — 3 prod streams Active"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-8.2b-streams-3-active.png</code>
+            <div class="placeholder-hint">Capture: Stream Pool detail → Streams tab with 3 streams Active and visible retention column values.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">8.2b</span> ✓ 3 prod streams Active with correct retentions</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
 
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
@@ -1045,6 +1781,13 @@ done</pre></div>
       </div>
 
       <h1>Object Storage (RA-GZRS) + Virtual Private Vault</h1>
+
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
 <pre># Object Storage with cross-region replication to Tokyo
@@ -1066,6 +1809,76 @@ export VAULT_OCID=$(oci kms management vault create \
         <div class="technique-label">Virtual Private Vault vs Default</div>
         <p>VIRTUAL_PRIVATE = HSM-backed dedicated hardware · FIPS 140-2 Level 3 · ~$2/hour vs Default ~$1/month · ใช้ใน Prod เพื่อ compliance + audit</p>
       </div>
+
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>9.1 Buckets + Cross-Region Replication (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Storage</code> → <code>Object Storage</code> → <code>Buckets</code> → <strong>Create Bucket</strong></li>
+        <li>สร้าง 3 buckets: <code>queue-prod-uploads</code>, <code>queue-prod-public-media</code>, <code>queue-prod-backups</code> · Standard tier · Private visibility</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-9.1a-bucket-create.png"
+               alt="OCI Console — Create prod bucket"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-9.1a-bucket-create.png</code>
+            <div class="placeholder-hint">Capture: Create Bucket form with Standard tier, Private visibility.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.1a</span> Create bucket (×3)</figcaption>
+      </figure>
+
+      <ol class="gui-steps" start="3">
+        <li>ที่ bucket detail → <strong>Replication</strong> → <strong>Create Replication Policy</strong></li>
+        <li>Destination region <code>ap-tokyo-1</code> · Destination bucket <code>queue-prod-{name}-dr</code> (ต้องสร้างใน Tokyo ก่อน)</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-9.1b-bucket-replication-tokyo.png"
+               alt="OCI Console — Bucket replication policy to Tokyo"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-9.1b-bucket-replication-tokyo.png</code>
+            <div class="placeholder-hint">Capture: Create Replication Policy form with destination region = ap-tokyo-1 and DR bucket name.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.1b</span> Cross-region replication → Tokyo (DR)</figcaption>
+      </figure>
+
+      <h2>9.2 Virtual Private Vault (Console GUI)</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Identity &amp; Security</code> → <code>Vault</code> → <strong>Create Vault</strong></li>
+        <li>Name <code>vault-prod-aisXXXX</code> · <strong>Type: Virtual Private</strong> (HSM-backed · FIPS 140-2 L3)</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-9.2a-vault-virtual-private.png"
+               alt="OCI Console — Create Vault Virtual Private"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-9.2a-vault-virtual-private.png</code>
+            <div class="placeholder-hint">Capture: Create Vault form with type <strong>Virtual Private</strong> selected (vs Default). Pricing note may be visible — keep it in the shot.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">9.2a</span> Vault type = Virtual Private (HSM)</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
 
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
@@ -1183,6 +1996,13 @@ EOF</pre></div>
       <h1>Failover Test + Cost Monitoring + Cutover</h1>
       <p class="lead">ทดสอบ HA จริง · simulate AD failure · verify auto-recovery · setup cost alerts · cutover plan</p>
 
+      <div class="track-tabs">
+        <button class="tab-btn active" data-track="cli">🖥 CLI (oci CLI commands)</button>
+        <button class="tab-btn" data-track="gui">🖱 Console GUI (with screenshots)</button>
+      </div>
+
+      <div class="track-panel cli active">
+
       <h2>11.1 End-to-End Smoke Test</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
@@ -1240,6 +2060,117 @@ oci usage-api request-summarized-usages \
         <div class="prod-warning-label">DO NOT TEARDOWN</div>
         <p>ไม่มี teardown script สำหรับ Prod · นี่คือ production environment ที่จะ serve traffic · ถ้าต้องการลบ · ต้อง <strong>change management process</strong> + data migration + decommissioning plan</p>
       </div>
+
+      </div><!-- /.track-panel.cli -->
+
+      <div class="track-panel gui">
+
+      <h2>11.2 Failover Test from Console</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Databases</code> → <code>PostgreSQL</code> → DB system <code>pg-prod-aisXXXX</code></li>
+        <li>คลิก <strong>Actions</strong> dropdown → <strong>Failover</strong></li>
+        <li>Confirm dialog → คลิก Failover</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-11.2a-pg-failover-action.png"
+               alt="OCI Console — PG Actions menu Failover"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-11.2a-pg-failover-action.png</code>
+            <div class="placeholder-hint">Capture: DB system detail with Actions dropdown open showing Failover option. Maintenance window only!</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">11.2a</span> Actions → Failover (maintenance window!)</figcaption>
+      </figure>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-11.2b-pg-role-swapped.png"
+               alt="OCI Console — PG instances after failover (roles swapped)"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-11.2b-pg-role-swapped.png</code>
+            <div class="placeholder-hint">Capture: Instances tab after failover — the previously Standby (AD-2) instance is now Primary, and AD-1 is Standby.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">11.2b</span> ✓ After failover · roles swapped (AD-2 now Primary)</figcaption>
+      </figure>
+
+      <h2>11.3 Cost Analysis Dashboard</h2>
+
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Billing &amp; Cost Management</code> → <code>Cost Analysis</code></li>
+        <li>Filter: Compartment = <code>compartment-prod-aisXXXX</code> · Time range = Last 7 days · Granularity = Daily</li>
+        <li>Group by <strong>Service</strong> to see cost split</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-11.3a-cost-analysis-by-service.png"
+               alt="OCI Console — Cost Analysis dashboard"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-11.3a-cost-analysis-by-service.png</code>
+            <div class="placeholder-hint">Capture: Cost Analysis chart grouped by Service for prod compartment last 7 days. Crop to hide tenancy details.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">11.3a</span> Cost Analysis · grouped by Service · last 7 days</figcaption>
+      </figure>
+
+      <h3>Budget Alert</h3>
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Billing &amp; Cost Management</code> → <code>Budgets</code> → <strong>Create Budget</strong></li>
+        <li>Name <code>budget-prod-aisXXXX</code> · Target: Compartment = prod · Amount <code>$1000/month</code></li>
+        <li>Alert: at 75% + 90% + 100% · email recipients (DevOps + finance)</li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-11.3b-budget-alert.png"
+               alt="OCI Console — Create Budget with alert thresholds"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-11.3b-budget-alert.png</code>
+            <div class="placeholder-hint">Capture: Create Budget form with alert rules at 75/90/100% and email recipients.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">11.3b</span> Budget · $1000/mo · alerts 75/90/100%</figcaption>
+      </figure>
+
+      <h3>Monitoring Alarm — LB 5xx Rate</h3>
+      <ol class="gui-steps">
+        <li><code>☰</code> → <code>Observability &amp; Management</code> → <code>Monitoring</code> → <code>Alarm Definitions</code> → <strong>Create Alarm</strong></li>
+        <li>Metric namespace <code>oci_lbaas</code> · Metric <code>HttpResponses</code> · Dimension <code>httpStatusCode = 5XX</code></li>
+        <li>Threshold &gt; 10 / min for 5 min → notification topic <code>prod-ops-alerts</code></li>
+      </ol>
+
+      <figure class="gui-shot">
+        <div class="shot-frame">
+          <img loading="lazy" src="resource/screenshots/prod/prod-11.3c-alarm-5xx.png"
+               alt="OCI Console — Create Alarm for LB 5xx rate"
+               onerror="this.parentElement.classList.add('missing');">
+          <div class="shot-placeholder">
+            <div class="placeholder-icon">📸</div>
+            <div class="placeholder-title">Screenshot pending</div>
+            <code class="placeholder-file">prod/prod-11.3c-alarm-5xx.png</code>
+            <div class="placeholder-hint">Capture: Create Alarm form with oci_lbaas / HttpResponses / 5XX dimension and threshold rule.</div>
+          </div>
+        </div>
+        <figcaption><span class="shot-id">11.3c</span> Alarm · LB 5xx rate &gt; 10/min for 5min</figcaption>
+      </figure>
+
+      </div><!-- /.track-panel.gui -->
 
       <h2>🎉 Production Deployed!</h2>
 
@@ -1393,6 +2324,28 @@ oci usage-api request-summarized-usages \
     const n = parseInt(queryStep, 10);
     if (!isNaN(n)) currentStep = Math.max(0, Math.min(totalSteps - 1, n));
   }
+
+  // CLI / Console GUI track switcher
+  function applyTrack(track) {
+    document.querySelectorAll('.step-page').forEach(step => {
+      step.querySelectorAll(':scope > .track-tabs .tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.track === track);
+      });
+      step.querySelectorAll(':scope > .track-panel').forEach(p => {
+        p.classList.toggle('active', p.classList.contains(track));
+      });
+    });
+    try { localStorage.setItem('codelab-track-pref', track); } catch {}
+  }
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('tab-btn') && e.target.dataset.track) {
+      applyTrack(e.target.dataset.track);
+    }
+  });
+  try {
+    const pref = localStorage.getItem('codelab-track-pref');
+    if (pref === 'gui') applyTrack('gui');
+  } catch {}
 
   showStep(currentStep);
 </script>
