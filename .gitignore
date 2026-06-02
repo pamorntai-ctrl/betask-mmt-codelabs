@@ -16,3 +16,8 @@ package-lock.json
 
 # Cloudflare cache (managed by Cloudflare, don't commit)
 .dev.vars
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
