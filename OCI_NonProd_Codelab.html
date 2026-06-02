@@ -1,0 +1,1634 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="color-scheme" content="light only"/>
+<title>OCI Non-Prod Setup Codelab — AIS MMT-RFP</title>
+
+<style>
+  :root {
+    color-scheme: light only;
+    forced-color-adjust: none;
+    --bg: #fafbfc;
+    --panel: #ffffff;
+    --panel-2: #f4f6f8;
+    --border: #e0e4e9;
+    --border-strong: #c8cfd6;
+    --text: #1a1f29;
+    --text-2: #4a5260;
+    --muted: #7a8595;
+    --accent: #C74634;
+    --accent-dark: #A0271E;
+    --oracle-red: #F80000;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0078d4;
+    --code-bg: #1e293b;
+  }
+  * { box-sizing: border-box; forced-color-adjust: none; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #fafbfc !important;
+    color: #1a1f29 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  header { position: sticky; top: 0; z-index: 100; background: #ffffff !important; border-bottom: 1px solid #e0e4e9; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .header-inner { max-width: 1380px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+  .brand-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #C74634 0%, #A0271E 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; flex-shrink: 0; }
+  .brand-text { font-weight: 700; font-size: 16px; }
+  .brand-sub { font-size: 11.5px; color: #7a8595; margin-top: 1px; }
+  .header-progress { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: #7a8595; }
+  .progress-bar { width: 220px; height: 6px; background: #f4f6f8; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #C74634, #16a34a); transition: width 0.3s; width: 0%; }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; max-width: 1380px; margin: 0 auto; min-height: calc(100vh - 60px); }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } aside { display: none; } }
+
+  aside { background: #ffffff !important; border-right: 1px solid #e0e4e9; padding: 20px 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; }
+  .nav-section { font-size: 11px; color: #7a8595 !important; font-weight: 700; letter-spacing: 0.5px; padding: 14px 24px 8px; }
+  .nav-step { display: flex; align-items: center; gap: 10px; padding: 10px 24px; cursor: pointer; font-size: 13.5px; border-left: 3px solid transparent; background: #ffffff !important; color: #1a1f29 !important; transition: background 0.12s; user-select: none; }
+  .nav-step:hover { background: #f4f6f8 !important; }
+  .nav-step.active { background: #fef5f4 !important; border-left-color: #C74634; color: #C74634 !important; font-weight: 600; }
+  .nav-step.done .step-num { background: #16a34a !important; color: #ffffff !important; border-color: #16a34a; }
+  .nav-step.done .step-num::before { content: "✓"; }
+  .nav-step.done .step-num span { display: none; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #c8cfd6; background: #ffffff !important; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #7a8595; flex-shrink: 0; }
+  .nav-step.active .step-num { background: #C74634 !important; color: #ffffff !important; border-color: #C74634; }
+
+  main { padding: 32px 48px 80px; max-width: 980px; background: #fafbfc !important; }
+  @media (max-width: 1100px) { main { padding: 28px 28px 60px; } }
+
+  .step-page { display: none; }
+  .step-page.active { display: block; }
+
+  .step-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; font-size: 12.5px; color: #7a8595; flex-wrap: wrap; }
+  .meta-chip { padding: 4px 10px; background: #f4f6f8 !important; color: #4a5260 !important; border: 1px solid #e0e4e9; border-radius: 4px; display: inline-block; }
+  .meta-chip.time { color: #C74634 !important; }
+  .meta-chip.oci { color: #C74634 !important; background: #fef5f4 !important; }
+
+  h1 { font-size: 30px; margin: 0 0 10px; font-weight: 700; line-height: 1.3; color: #1a1f29 !important; }
+  h2 { font-size: 21px; margin: 36px 0 12px; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid #e0e4e9; color: #1a1f29 !important; }
+  h3 { font-size: 16px; margin: 24px 0 10px; color: #A0271E !important; font-weight: 600; }
+  h4 { font-size: 14px; margin: 18px 0 8px; color: #1a1f29 !important; font-weight: 600; }
+  p { margin: 10px 0 14px; color: #4a5260 !important; }
+  ul, ol { padding-left: 24px; color: #4a5260 !important; margin: 10px 0; }
+  li { margin: 6px 0; }
+  .lead { font-size: 16.5px; color: #4a5260 !important; margin: 8px 0 28px; line-height: 1.7; }
+
+  /* Goal Box */
+  .goal { background: linear-gradient(135deg, rgba(199,70,52,0.06), rgba(22,163,74,0.04)); border: 1px solid rgba(199,70,52,0.2); border-radius: 10px; padding: 16px 20px; margin: 20px 0 28px; }
+  .goal-label { font-size: 11.5px; font-weight: 700; color: #C74634; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .goal-text { font-size: 14.5px; color: #1a1f29; line-height: 1.6; }
+
+  /* NOTE / NOTICE / TECHNIQUE — 3 different types */
+  .note { background: rgba(0,120,212,0.05); border-left: 4px solid #0078d4; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .note-label { font-size: 12px; font-weight: 700; color: #0078d4; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .note-label::before { content: "📘 NOTE: "; }
+  .note p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .notice { background: rgba(217,119,6,0.06); border-left: 4px solid #d97706; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .notice-label { font-size: 12px; font-weight: 700; color: #d97706; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .notice-label::before { content: "⚠️ NOTICE: "; }
+  .notice p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .technique { background: rgba(22,163,74,0.06); border-left: 4px solid #16a34a; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .technique-label { font-size: 12px; font-weight: 700; color: #16a34a; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .technique-label::before { content: "💡 TECHNIQUE: "; }
+  .technique p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .danger-box { background: rgba(220,38,38,0.06); border-left: 4px solid #dc2626; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .danger-box::before { content: "🚨 DANGER · "; font-weight: 700; color: #dc2626; }
+
+  /* Code blocks */
+  pre {
+    background: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-radius: 8px;
+    padding: 16px 18px !important;
+    margin: 14px 0 !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    overflow-x: auto;
+    position: relative;
+    white-space: pre !important;
+    font-family: "SF Mono", Menlo, Consolas, monospace !important;
+  }
+  code.inline, p code, li code, td code, th code {
+    background: #f1f5f9 !important;
+    color: #be185d !important;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+  .code-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: inherit; transition: background 0.15s; z-index: 2; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  .copy-btn.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+  .cmd-label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a8595; margin: 18px 0 6px; font-weight: 600; }
+  .cmd-label .icon { width: 18px; height: 18px; background: #C74634; color: #fff; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; background: #ffffff !important; border: 1px solid #e0e4e9; border-radius: 8px; overflow: hidden; font-size: 13.5px; }
+  th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid #e0e4e9; background: transparent !important; color: #1a1f29 !important; vertical-align: top; }
+  th { background: #f4f6f8 !important; color: #1a1f29 !important; font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+
+  .checklist { background: #ffffff !important; border: 1px solid #e0e4e9; border-radius: 8px; padding: 14px 18px; margin: 18px 0; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 7px 0; font-size: 14px; color: #1a1f29; }
+  .checklist-item input[type=checkbox] { margin-top: 5px; cursor: pointer; flex-shrink: 0; }
+  .checklist-item label { cursor: pointer; line-height: 1.5; }
+
+  .step-nav { display: flex; gap: 12px; margin: 44px 0 0; padding-top: 24px; border-top: 1px solid #e0e4e9; flex-wrap: wrap; }
+  .btn { padding: 10px 20px; background: #C74634; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13.5px; font-family: inherit; transition: background 0.15s; }
+  .btn:hover { background: #A0271E; }
+  .btn.secondary { background: #ffffff; color: #1a1f29; border: 1px solid #c8cfd6; }
+  .btn.secondary:hover { background: #f4f6f8; }
+  .btn-next { margin-left: auto; }
+  .complete-btn { background: #16a34a; }
+  .complete-btn:hover { background: #15803d; }
+
+  .verify { background: rgba(22,163,74,0.05); border: 1px dashed #16a34a; border-radius: 8px; padding: 16px 18px; margin: 18px 0; }
+  .verify-label { font-size: 11.5px; font-weight: 700; color: #16a34a; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .verify pre { margin: 0 !important; }
+  .verify p { margin: 8px 0 0; font-size: 13.5px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 18px 0; }
+  .stat { background: #ffffff !important; border: 1px solid #e0e4e9; border-radius: 8px; padding: 14px 16px; }
+  .stat-label { font-size: 11.5px; color: #7a8595; font-weight: 600; }
+  .stat-value { font-size: 22px; font-weight: 700; color: #C74634; margin-top: 4px; line-height: 1.2; }
+  .stat-sub { font-size: 11.5px; color: #7a8595; margin-top: 4px; line-height: 1.4; }
+
+  .arch-tile { background: linear-gradient(135deg, #C74634 0%, #A0271E 100%); color: #fff; padding: 32px 36px; border-radius: 14px; margin: 12px 0 28px; }
+  .arch-tile h2 { color: #fff; margin: 0 0 10px; border: none; padding: 0; font-size: 22px; }
+  .arch-tile p { color: rgba(255,255,255,0.94); margin: 0; line-height: 1.65; }
+
+  .diff-prod-box { background: #fef5f4; border: 1px solid rgba(199,70,52,0.2); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13.5px; }
+  .diff-prod-box strong { color: #C74634; }
+
+  /* Architecture Progress Diagram (per-step visual indicator) */
+  .arch-progress {
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    border: 1px solid #e0e4e9;
+    border-radius: 12px;
+    padding: 14px 18px 10px;
+    margin: 0 0 24px;
+    position: relative;
+  }
+  .arch-progress-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px; color: #7a8595;
+  }
+  .arch-progress-header strong { color: #1a1f29; font-size: 13px; }
+  .arch-progress-legend { display: flex; gap: 16px; align-items: center; }
+  .arch-progress-legend .item { display: flex; align-items: center; gap: 6px; }
+  .arch-progress-legend .swatch { width: 12px; height: 12px; border-radius: 2px; }
+  .arch-progress-legend .swatch.todo { background: #d1d5db; }
+  .arch-progress-legend .swatch.done { background: #C74634; }
+  .arch-progress svg { display: block; max-width: 100%; height: auto; }
+
+  /* Default state — all components gray (not done) */
+  .arch-comp rect.fill,
+  .arch-comp circle.fill,
+  .arch-comp path.fill {
+    fill: #d1d5db;
+    stroke: #9ca3af;
+    transition: fill 0.4s, stroke 0.4s;
+  }
+  .arch-comp rect.stroke-only {
+    fill: none;
+    stroke: #9ca3af;
+    transition: stroke 0.4s;
+  }
+  .arch-comp text {
+    fill: #6b7280;
+    transition: fill 0.4s;
+  }
+  .arch-line {
+    stroke: #d1d5db;
+    transition: stroke 0.4s, opacity 0.4s;
+    opacity: 0.5;
+  }
+
+  /* Done state — components colored */
+  .arch-comp.done rect.fill,
+  .arch-comp.done circle.fill,
+  .arch-comp.done path.fill {
+    fill: var(--c, #4A90E2);
+    stroke: var(--s, #1F5BA8);
+  }
+  .arch-comp.done rect.stroke-only {
+    stroke: var(--s, #C74634);
+  }
+  .arch-comp.done text {
+    fill: var(--t, #ffffff);
+  }
+  .arch-comp.done text.label {
+    fill: var(--t-label, #1a1f29);
+  }
+  .arch-line.active {
+    stroke: var(--c, #5F6368);
+    opacity: 1;
+  }
+
+  /* Just-completed in current step — pulse animation */
+  .arch-comp.just-done rect.fill,
+  .arch-comp.just-done rect.stroke-only,
+  .arch-comp.just-done circle.fill {
+    animation: pulse-glow 1.5s ease-out;
+  }
+  @keyframes pulse-glow {
+    0% { filter: drop-shadow(0 0 0 rgba(22,163,74,0)); }
+    50% { filter: drop-shadow(0 0 8px rgba(22,163,74,0.7)); }
+    100% { filter: drop-shadow(0 0 0 rgba(22,163,74,0)); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand-logo">🔥</div>
+    <div>
+      <div class="brand-text">OCI Non-Prod Setup Codelab</div>
+      <div class="brand-sub">AIS MMT-RFP · Dev/QA/UAT environment · ~2 hours</div>
+    </div>
+    <div class="header-progress">
+      <span id="progress-label">0 / 11 ขั้น</span>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside>
+    <div class="nav-section">เริ่มต้น</div>
+    <div class="nav-step active" data-step="0"><span class="step-num"><span>0</span></span> Welcome & Architecture</div>
+    <div class="nav-step" data-step="1"><span class="step-num"><span>1</span></span> Prerequisites</div>
+    <div class="nav-step" data-step="2"><span class="step-num"><span>2</span></span> Compartment + VCN</div>
+
+    <div class="nav-section">Compute & Network</div>
+    <div class="nav-step" data-step="3"><span class="step-num"><span>3</span></span> OCI WAF + LB (Detection)</div>
+    <div class="nav-step" data-step="4"><span class="step-num"><span>4</span></span> OKE Cluster (Non-Prod)</div>
+    <div class="nav-step" data-step="5"><span class="step-num"><span>5</span></span> K8s Gateway API</div>
+
+    <div class="nav-section">Data Services</div>
+    <div class="nav-step" data-step="6"><span class="step-num"><span>6</span></span> OCI Database PostgreSQL</div>
+    <div class="nav-step" data-step="7"><span class="step-num"><span>7</span></span> OCI Cache (Valkey)</div>
+    <div class="nav-step" data-step="8"><span class="step-num"><span>8</span></span> OCI Streaming</div>
+    <div class="nav-step" data-step="9"><span class="step-num"><span>9</span></span> Object Storage + Vault</div>
+
+    <div class="nav-section">Deploy</div>
+    <div class="nav-step" data-step="10"><span class="step-num"><span>10</span></span> Deploy Workload</div>
+    <div class="nav-step" data-step="11"><span class="step-num"><span>11</span></span> Validate & Teardown</div>
+  </aside>
+
+
+  <main>
+
+    <!-- ============================================================ -->
+    <!-- ARCHITECTURE PROGRESS DIAGRAM (updates per step)              -->
+    <!-- ============================================================ -->
+    <div class="arch-progress" id="archProgress">
+      <div class="arch-progress-header">
+        <strong>📊 Architecture Progress</strong>
+        <div class="arch-progress-legend">
+          <div class="item"><span class="swatch todo"></span> รอ build</div>
+          <div class="item"><span class="swatch done"></span> เสร็จแล้ว</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg">
+        <!-- User (always shown · external · no state) -->
+        <g>
+          <rect x="20" y="170" width="80" height="60" rx="8" fill="#8E7CC3" stroke="#6A4FBE"/>
+          <text x="60" y="200" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">User</text>
+          <text x="60" y="216" text-anchor="middle" fill="#fff" font-size="8">Dev/QA/UAT</text>
+        </g>
+
+        <!-- Arrows (default gray, become active as both endpoints become done) -->
+        <line class="arch-line" id="arr-user-waf" x1="100" y1="200" x2="155" y2="200" stroke-width="2" marker-end="url(#archArrow)"/>
+        <line class="arch-line" id="arr-waf-lb" x1="255" y1="200" x2="265" y2="200" stroke-width="2" marker-end="url(#archArrow)"/>
+        <line class="arch-line" id="arr-lb-oke" x1="365" y1="200" x2="375" y2="200" stroke-width="2" marker-end="url(#archArrow)"/>
+        <line class="arch-line" id="arr-oke-cache" x1="620" y1="155" x2="635" y2="155" stroke-width="1.5" marker-end="url(#archArrow)"/>
+        <line class="arch-line" id="arr-oke-stream" x1="620" y1="225" x2="635" y2="225" stroke-width="1.5" marker-end="url(#archArrow)"/>
+        <line class="arch-line" id="arr-oke-db" x1="500" y1="310" x2="500" y2="345" stroke-width="2" marker-end="url(#archArrow)"/>
+        <line class="arch-line" id="arr-db-storage" x1="460" y1="375" x2="635" y2="290" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#archArrow)"/>
+
+        <defs>
+          <marker id="archArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/>
+          </marker>
+        </defs>
+
+        <!-- OCI Tenancy outer frame (step 2) -->
+        <g class="arch-comp" data-id="tenancy" style="--s: #C74634;">
+          <rect class="stroke-only" x="125" y="20" width="765" height="410" rx="14" stroke-width="2" stroke-dasharray="10 6"/>
+          <text class="label" x="140" y="40" font-size="10" font-weight="700">OCI Tenancy · Compartment: nonprod</text>
+        </g>
+
+        <!-- VCN inner frame (step 2) -->
+        <g class="arch-comp" data-id="vcn" style="--s: #5F6368;">
+          <rect class="stroke-only" x="140" y="55" width="735" height="365" rx="10" stroke-width="1.2" stroke-dasharray="6 4"/>
+          <text class="label" x="155" y="72" font-size="9" font-weight="600">VCN 10.30.0.0/16</text>
+        </g>
+
+        <!-- WAF (step 3) -->
+        <g class="arch-comp" data-id="waf" style="--c: #C74634; --s: #A0271E; --t: #ffffff;">
+          <rect class="fill" x="155" y="170" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="205" y="190" text-anchor="middle" font-size="10" font-weight="700">OCI WAF</text>
+          <text x="205" y="204" text-anchor="middle" font-size="8">Detection</text>
+          <text x="205" y="216" text-anchor="middle" font-size="8">mode</text>
+        </g>
+
+        <!-- Load Balancer (step 3) -->
+        <g class="arch-comp" data-id="lb" style="--c: #1F5BA8; --s: #0E3F7C; --t: #ffffff;">
+          <rect class="fill" x="265" y="170" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="315" y="190" text-anchor="middle" font-size="10" font-weight="700">Load Bal</text>
+          <text x="315" y="204" text-anchor="middle" font-size="8">10 Mbps</text>
+          <text x="315" y="216" text-anchor="middle" font-size="8">Fixed</text>
+        </g>
+
+        <!-- OKE Cluster (step 4) -->
+        <g class="arch-comp" data-id="oke" style="--c: #FEF5F4; --s: #C74634; --t-label: #C74634;">
+          <rect class="stroke-only" x="375" y="110" width="245" height="200" rx="8" stroke-width="1.5"/>
+          <rect class="fill" x="375" y="110" width="245" height="24" rx="8" stroke-width="1.5"/>
+          <text x="497" y="127" text-anchor="middle" font-size="11" font-weight="700">OKE Cluster</text>
+        </g>
+
+        <!-- OKE Worker Node (step 4) -->
+        <g class="arch-comp" data-id="oke-worker" style="--c: #F1F8E9; --s: #34A853; --t-label: #34A853;">
+          <rect class="fill" x="390" y="145" width="100" height="155" rx="6" stroke-width="1.2"/>
+          <text class="label" x="440" y="165" text-anchor="middle" font-size="9" font-weight="700">AD-1 Worker</text>
+          <text class="label" x="440" y="180" text-anchor="middle" font-size="8" fill="#1F2328">1 OCPU/4 GB</text>
+        </g>
+
+        <!-- Gateway API (step 5) -->
+        <g class="arch-comp" data-id="gateway-api" style="--c: #FFF5F5; --s: #C74634; --t-label: #C74634;">
+          <rect class="fill" x="500" y="145" width="110" height="80" rx="6" stroke-width="1.2"/>
+          <text class="label" x="555" y="165" text-anchor="middle" font-size="9" font-weight="700">Gateway API</text>
+          <text class="label" x="555" y="180" text-anchor="middle" font-size="7" fill="#5F6368">HTTPRoute</text>
+          <text class="label" x="555" y="195" text-anchor="middle" font-size="7" fill="#5F6368">+ TLS</text>
+        </g>
+
+        <!-- Pods (step 10) -->
+        <g class="arch-comp" data-id="pods" style="--c: #E0F2F1; --s: #00897B; --t-label: #00897B;">
+          <rect class="fill" x="500" y="235" width="110" height="60" rx="6" stroke-width="1.2"/>
+          <text class="label" x="555" y="255" text-anchor="middle" font-size="9" font-weight="700">Pods</text>
+          <text class="label" x="555" y="270" text-anchor="middle" font-size="7" fill="#1F2328">FE · BE · API</text>
+          <text class="label" x="555" y="284" text-anchor="middle" font-size="7" fill="#5F6368">queue-dev ns</text>
+        </g>
+
+        <!-- OCI Cache (step 7) -->
+        <g class="arch-comp" data-id="cache" style="--c: #E91E63; --s: #AD1457; --t: #ffffff;">
+          <rect class="fill" x="635" y="125" width="105" height="60" rx="6" stroke-width="1.2"/>
+          <text x="687" y="145" text-anchor="middle" font-size="10" font-weight="700">Cache</text>
+          <text x="687" y="159" text-anchor="middle" font-size="8">Valkey 8.1</text>
+          <text x="687" y="173" text-anchor="middle" font-size="7">Single node</text>
+        </g>
+
+        <!-- OCI Streaming (step 8) -->
+        <g class="arch-comp" data-id="streaming" style="--c: #231F20; --s: #000000; --t: #ffffff;">
+          <rect class="fill" x="635" y="195" width="105" height="60" rx="6" stroke-width="1.2"/>
+          <text x="687" y="215" text-anchor="middle" font-size="10" font-weight="700">Streaming</text>
+          <text x="687" y="229" text-anchor="middle" font-size="8">Kafka API</text>
+          <text x="687" y="243" text-anchor="middle" font-size="7">2 partitions</text>
+        </g>
+
+        <!-- OCI Object Storage (step 9) -->
+        <g class="arch-comp" data-id="object-storage" style="--c: #F80000; --s: #A0271E; --t: #ffffff;">
+          <rect class="fill" x="635" y="265" width="105" height="60" rx="6" stroke-width="1.2"/>
+          <text x="687" y="285" text-anchor="middle" font-size="10" font-weight="700">Object Stor</text>
+          <text x="687" y="299" text-anchor="middle" font-size="8">3 buckets</text>
+          <text x="687" y="313" text-anchor="middle" font-size="7">Standard tier</text>
+        </g>
+
+        <!-- OCI Vault (step 9) -->
+        <g class="arch-comp" data-id="vault" style="--c: #9333EA; --s: #6B21A8; --t: #ffffff;">
+          <rect class="fill" x="755" y="265" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="805" y="285" text-anchor="middle" font-size="10" font-weight="700">Vault</text>
+          <text x="805" y="299" text-anchor="middle" font-size="8">Secrets</text>
+          <text x="805" y="313" text-anchor="middle" font-size="7">+ KMS keys</text>
+        </g>
+
+        <!-- OCI Database PostgreSQL (step 6) -->
+        <g class="arch-comp" data-id="db" style="--c: #1F5BA8; --s: #0E3F7C; --t: #ffffff;">
+          <rect class="fill" x="155" y="345" width="305" height="65" rx="8" stroke-width="1.2"/>
+          <text x="308" y="365" text-anchor="middle" font-size="11" font-weight="700">OCI Database PostgreSQL 16</text>
+          <text x="308" y="380" text-anchor="middle" font-size="8">VM.E4.Flex · 2 OCPU/8 GB · 100 GB</text>
+          <text x="308" y="394" text-anchor="middle" font-size="7" font-style="italic">⚠ Single instance · No HA</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- STEP 0 -->
+    <section class="step-page active" data-step="0">
+      <div class="arch-tile">
+        <h2>OCI Non-Prod Environment Setup</h2>
+        <p>เรียนรู้วิธี deploy <strong>Non-Production environment</strong> ของระบบ AIS MMT-RFP บน Oracle Cloud Infrastructure (OCI) ทีละขั้น · เน้น <strong>cost-optimization</strong> + <strong>single AD</strong> + <strong>reduced specs</strong> สำหรับ Dev/QA/UAT workloads</p>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">จำนวนขั้น</div><div class="stat-value">11</div><div class="stat-sub">รวม validate & teardown</div></div>
+        <div class="stat"><div class="stat-label">เวลาประมาณ</div><div class="stat-value">~2 ชม.</div><div class="stat-sub">ครั้งแรก</div></div>
+        <div class="stat"><div class="stat-label">ค่าใช้จ่าย</div><div class="stat-value">~$0.40/ชม.</div><div class="stat-sub">ตอนรัน · ลบทิ้งหลังเสร็จ</div></div>
+        <div class="stat"><div class="stat-label">ภูมิภาค</div><div class="stat-value">SEA</div><div class="stat-sub">ap-singapore-1</div></div>
+      </div>
+
+      <h2>สิ่งที่จะ build</h2>
+
+      <table>
+        <thead><tr><th>Component</th><th>Non-Prod Spec</th><th>Prod Spec (เปรียบเทียบ)</th></tr></thead>
+        <tbody>
+          <tr><td>OKE Worker</td><td>1 OCPU / 4 GB · 1-3 nodes · <strong>1 AD only</strong></td><td>2 OCPU / 16 GB · 2-10 nodes · 2 AD</td></tr>
+          <tr><td>OCI Database PG</td><td>2 OCPU / 8 GB · 100 GB · <strong>No HA</strong></td><td>4 OCPU / 16 GB · 256 GB · HA</td></tr>
+          <tr><td>OCI Cache (Valkey)</td><td>1 vCPU / 4 GB · <strong>Single node</strong></td><td>2 vCPU / 8 GB · Primary+Replica</td></tr>
+          <tr><td>OCI Streaming</td><td>2 partitions · 3-day retention</td><td>4 partitions · 7-day retention</td></tr>
+          <tr><td>OCI WAF</td><td><strong>Detection mode</strong> (log only)</td><td>Prevention mode (block)</td></tr>
+          <tr><td>Load Balancer</td><td>Fixed 10 Mbps</td><td>Flexible 10-8000 Mbps</td></tr>
+          <tr><td>Object Storage</td><td>Standard tier · single AD</td><td>RA-GZRS · cross-region</td></tr>
+        </tbody>
+      </table>
+
+      <div class="diff-prod-box">
+        <strong>Cost ratio:</strong> Non-Prod ≈ <strong>37% ของ Prod cost</strong> · ~$290/เดือน (~10,400 THB) ใช้สำหรับ dev/qa/uat/staging ทั้ง 4 sub-environments (แยกด้วย K8s namespace)
+      </div>
+
+      <h2>สิ่งที่ต้องเตรียม</h2>
+
+      <div class="checklist">
+        <div class="checklist-item"><input type="checkbox" id="pre1"><label for="pre1">OCI Tenancy + Tenancy OCID + User OCID</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre2"><label for="pre2">OCI CLI 3.40+ ติดตั้งแล้ว (<code class="inline">oci --version</code>)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre3"><label for="pre3">kubectl 1.29+ (<code class="inline">kubectl version --client</code>)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre4"><label for="pre4">Helm 3.14+ + OCI CLI configured (<code class="inline">~/.oci/config</code>)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre5"><label for="pre5">SSH key pair สำหรับ OKE worker access</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre6"><label for="pre6">~2 ชั่วโมงต่อเนื่อง</label></div>
+      </div>
+
+      <div class="notice">
+        <div class="notice-label">ค่าใช้จ่ายในการเรียน</div>
+        <p>Resource ที่จะสร้างมีราคา ~$0.40/ชม. ตอนรัน (~$10/วัน ถ้าเปิดทิ้ง) · <strong>Step 11</strong> มี teardown script — อย่าข้าม</p>
+      </div>
+
+      <div class="note">
+        <div class="note-label">Why Non-Prod separately</div>
+        <p>Non-Prod แยก compartment กับ Prod เพื่อ: (1) คุม cost ได้ชัด · (2) ทดสอบ destructive operations โดยไม่กระทบ Prod · (3) RBAC แยก dev team ไม่ให้แตะ Prod · (4) สามารถ refresh data subset จาก Prod มาทดสอบได้</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-next" onclick="nextStep()">เริ่ม Codelab →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 1 -->
+    <section class="step-page" data-step="1">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 1 / 11</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">เริ่มต้น</span>
+      </div>
+
+      <h1>Prerequisites &amp; Environment Setup</h1>
+      <p class="lead">ติดตั้ง OCI CLI, configure auth, และ export environment variables ที่จะใช้ทั้ง codelab</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">OCI CLI authenticated · ตัวแปรพร้อม · OCID resources verified</div>
+      </div>
+
+      <h2>1.1 ติดตั้ง OCI CLI</h2>
+
+      <div class="cmd-label"><span class="icon">$</span> macOS / Linux</div>
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)"
+oci --version
+kubectl version --client
+helm version</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Configure OCI CLI ครั้งเดียว</div>
+        <p>รัน <code class="inline">oci setup config</code> · ใส่ Tenancy OCID + User OCID + Region · ระบบจะสร้าง API key + <code class="inline">~/.oci/config</code> ให้อัตโนมัติ · public key ต้องไป upload ที่ OCI Console → User → API Keys</p>
+      </div>
+
+      <h2>1.2 Configure OCI Auth</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci setup config
+# ตอบคำถาม:
+#   Location: /Users/$USER/.oci/config
+#   User OCID: ocid1.user.oc1..xxxx
+#   Tenancy OCID: ocid1.tenancy.oc1..xxxx
+#   Region: ap-singapore-1
+#   Generate RSA key pair: Y
+#   Passphrase: (empty for codelab)
+
+# Upload public key to OCI Console:
+cat ~/.oci/oci_api_key_public.pem
+# → Copy แล้ว paste ใน OCI Console → Profile → User Settings → API Keys → Add API Key</pre></div>
+
+      <h2>1.3 Test OCI CLI</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci iam region list --output table
+oci os ns get  # ดู Object Storage namespace ของ tenancy</pre></div>
+
+      <div class="note">
+        <div class="note-label">Object Storage Namespace</div>
+        <p>แต่ละ OCI tenancy มี Object Storage namespace 1 ตัว (ไม่ใช่ tenancy name) · เก็บค่าไว้เพราะจะใช้ภายหลังในการสร้าง buckets · ปกติเป็น string lowercase 10-15 ตัว เช่น <code class="inline">sg-objectstorage-xxx</code></p>
+      </div>
+
+      <h2>1.4 Export Environment Variables</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export SUFFIX="ais$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 4)"
+export REGION="ap-singapore-1"
+export TENANCY_OCID=$(oci iam compartment list --query "data[0].\"compartment-id\"" --raw-output)
+export ROOT_COMPARTMENT_OCID=$TENANCY_OCID
+export OS_NAMESPACE=$(oci os ns get --query data --raw-output)
+export COMPARTMENT_NAME="compartment-nonprod-${SUFFIX}"
+export VCN_NAME="vcn-nonprod-${SUFFIX}"
+export OKE_NAME="oke-nonprod-${SUFFIX}"
+export PG_NAME="pg-nonprod-${SUFFIX}"
+export CACHE_NAME="cache-nonprod-${SUFFIX}"
+export STREAM_POOL="stream-nonprod-${SUFFIX}"
+export OS_BUCKET_PREFIX="queue-nonprod-${SUFFIX}"
+
+# SSH key สำหรับ OKE workers
+[ -f ~/.ssh/oke_nonprod_rsa ] || ssh-keygen -t rsa -b 2048 -f ~/.ssh/oke_nonprod_rsa -N ""
+export SSH_PUB_KEY=$(cat ~/.ssh/oke_nonprod_rsa.pub)
+
+echo "Suffix: $SUFFIX"
+echo "Region: $REGION"</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">เก็บตัวแปรไว้ใน file</div>
+        <p>Copy block ข้างบนใส่ <code class="inline">~/oci-nonprod.env</code> · run <code class="inline">source ~/oci-nonprod.env</code> ก่อนเริ่มทุก shell ใหม่ · ป้องกัน OCID หาย</p>
+      </div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <p>รัน <code class="inline">echo $OS_NAMESPACE && oci iam region list -o table</code> — ต้องเห็น namespace + region list</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 2 -->
+    <section class="step-page" data-step="2">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 2 / 11</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">เริ่มต้น</span>
+      </div>
+
+      <h1>Compartment + VCN Setup</h1>
+      <p class="lead">สร้าง compartment แยกสำหรับ Non-Prod · setup Virtual Cloud Network (VCN) + subnets</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">Compartment "nonprod" + VCN 10.30.0.0/16 พร้อม subnets: public-lb · oke-nodes · oke-pods · private-data</div>
+      </div>
+
+      <h2>2.1 สร้าง Compartment</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci iam compartment create \
+  --compartment-id $ROOT_COMPARTMENT_OCID \
+  --name $COMPARTMENT_NAME \
+  --description "Non-Prod environment for AIS MMT-RFP · dev/qa/uat/staging" \
+  --wait-for-state ACTIVE
+
+export COMPARTMENT_OCID=$(oci iam compartment list \
+  --compartment-id $ROOT_COMPARTMENT_OCID \
+  --name $COMPARTMENT_NAME \
+  --query "data[0].id" --raw-output)
+echo "Compartment OCID: $COMPARTMENT_OCID"</pre></div>
+
+      <div class="note">
+        <div class="note-label">Compartments vs Resource Groups</div>
+        <p>OCI Compartment ทำหน้าที่คล้าย Azure Resource Group แต่ยืดหยุ่นกว่า · มี hierarchy ได้ · IAM policy ผูกกับ compartment · การเก็บ tag, quota, billing แยกตาม compartment</p>
+      </div>
+
+      <h2>2.2 สร้าง VCN + Subnets</h2>
+
+      <table>
+        <thead><tr><th>Subnet</th><th>CIDR</th><th>Type</th><th>ใช้</th></tr></thead>
+        <tbody>
+          <tr><td><code>public-lb</code></td><td>10.30.0.0/24</td><td>Public</td><td>OCI Load Balancer</td></tr>
+          <tr><td><code>oke-nodes</code></td><td>10.30.1.0/24</td><td>Private</td><td>OKE worker nodes</td></tr>
+          <tr><td><code>oke-pods</code></td><td>10.30.4.0/22</td><td>Private</td><td>Pod IPs (VCN-native CNI)</td></tr>
+          <tr><td><code>private-data</code></td><td>10.30.10.0/24</td><td>Private</td><td>DB · Cache · Streaming endpoints</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># VCN
+export VCN_OCID=$(oci network vcn create \
+  --compartment-id $COMPARTMENT_OCID \
+  --display-name $VCN_NAME \
+  --cidr-blocks '["10.30.0.0/16"]' \
+  --dns-label "vcn${SUFFIX}" \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)
+
+# Internet Gateway (สำหรับ public subnet)
+export IGW_OCID=$(oci network internet-gateway create \
+  --compartment-id $COMPARTMENT_OCID \
+  --vcn-id $VCN_OCID \
+  --is-enabled true \
+  --display-name "igw-nonprod" \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)
+
+# NAT Gateway (สำหรับ private subnet egress)
+export NAT_OCID=$(oci network nat-gateway create \
+  --compartment-id $COMPARTMENT_OCID \
+  --vcn-id $VCN_OCID \
+  --display-name "nat-nonprod" \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)
+
+# Service Gateway (private access ไป OCI services)
+export SG_OCID=$(oci network service-gateway create \
+  --compartment-id $COMPARTMENT_OCID \
+  --vcn-id $VCN_OCID \
+  --services "[{\"serviceId\":\"$(oci network service list --query 'data[?contains(\"cidr-block\",`all-`)].id|[0]' --raw-output)\"}]" \
+  --display-name "sg-nonprod" \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">3 Gateways = 3 บทบาท</div>
+        <p><strong>Internet Gateway</strong> = public ingress · <strong>NAT Gateway</strong> = private egress to internet · <strong>Service Gateway</strong> = private access to OCI services (Object Storage, Streaming, etc.) โดยไม่ผ่าน internet · ประหยัด egress cost</p>
+      </div>
+
+      <div class="notice">
+        <div class="notice-label">ระวัง CIDR overlap</div>
+        <p>ถ้า AIS มี VCN/VNet อื่นที่อาจ peer กับนี้ในอนาคต · เลือก CIDR <strong>10.30.0.0/16</strong> ที่ไม่ชนกับ Prod (10.20.0.0/16) และ AIS on-prem</p>
+      </div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci network vcn get --vcn-id $VCN_OCID --query "data.\"lifecycle-state\"" --raw-output
+# คาดว่าได้: AVAILABLE</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 3 -->
+    <section class="step-page" data-step="3">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 3 / 11</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">Network</span>
+      </div>
+
+      <h1>OCI WAF (Detection) + Load Balancer</h1>
+      <p class="lead">สร้าง Load Balancer + WAF ใน Detection mode สำหรับ Non-Prod (ไม่ block traffic เพื่อ debug ง่าย)</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">Public LB Fixed 10 Mbps · WAF Detection mode · public IP พร้อม route ไป OKE</div>
+      </div>
+
+      <h2>3.1 Public IP + Load Balancer</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export PUBLIC_SUBNET_OCID=$(oci network subnet create \
+  --compartment-id $COMPARTMENT_OCID \
+  --vcn-id $VCN_OCID \
+  --cidr-block "10.30.0.0/24" \
+  --display-name "public-lb" \
+  --dns-label "publb" \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)
+
+export LB_OCID=$(oci lb load-balancer create \
+  --compartment-id $COMPARTMENT_OCID \
+  --display-name "lb-nonprod-${SUFFIX}" \
+  --shape-name "10Mbps" \
+  --subnet-ids "[\"$PUBLIC_SUBNET_OCID\"]" \
+  --is-private false \
+  --wait-for-state SUCCEEDED \
+  --query "data.id" --raw-output)
+
+export LB_PUBLIC_IP=$(oci lb load-balancer get \
+  --load-balancer-id $LB_OCID \
+  --query "data.\"ip-addresses\"[0].\"ip-address\"" --raw-output)
+echo "LB Public IP: $LB_PUBLIC_IP"</pre></div>
+
+      <div class="notice">
+        <div class="notice-label">Shape "10Mbps" = Fixed, ถูกที่สุด</div>
+        <p>Non-Prod ใช้ <strong>fixed shape 10Mbps</strong> (~$10/mo) แทน flexible · ไม่ auto-scale แต่เพียงพอสำหรับ test traffic · Prod ใช้ flexible 10-8000 Mbps</p>
+      </div>
+
+      <h2>3.2 OCI WAF (Detection Mode)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat > waf-policy.json <<'EOF'
+{
+  "actions": [
+    {"name": "Log Only", "type": "RETURN_HTTP_RESPONSE",
+     "code": 200, "headers": [], "body": {"type": "STATIC_TEXT", "text": ""}}
+  ],
+  "requestProtection": {
+    "rules": [
+      {"key": "owasp-crs", "name": "OWASP CRS",
+       "type": "PROTECTION", "actionName": "Log Only",
+       "protectionCapabilities": [
+         {"key": "920170", "version": 1},
+         {"key": "942100", "version": 1},
+         {"key": "941100", "version": 1}
+       ]}
+    ]
+  }
+}
+EOF
+
+export WAF_OCID=$(oci waf web-app-firewall-policy create \
+  --compartment-id $COMPARTMENT_OCID \
+  --display-name "waf-nonprod-${SUFFIX}" \
+  --from-json file://waf-policy.json \
+  --wait-for-state ACTIVE \
+  --query "data.id" --raw-output)</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Detection vs Prevention</div>
+        <p><strong>Detection mode</strong> = log อย่างเดียว · ไม่ block · ให้ตัว tester reproduce attack patterns ดู logs ได้ง่าย · เปลี่ยนเป็น <strong>Prevention mode</strong> ใน Prod เพื่อ block จริง</p>
+      </div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci lb load-balancer get --load-balancer-id $LB_OCID \
+  --query "data.{state:\"lifecycle-state\",shape:\"shape-name\",ip:\"ip-addresses\"[0].\"ip-address\"}" --output table</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 4 -->
+    <section class="step-page" data-step="4">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 4 / 11</span>
+        <span class="meta-chip time">⏱ 15 นาที</span>
+        <span class="meta-chip oci">Compute</span>
+      </div>
+
+      <h1>OKE Cluster — Non-Prod Sizing</h1>
+      <p class="lead">สร้าง OKE cluster 1 AD · 1 OCPU/4GB workers · 1-3 nodes (vs Prod's 2 AD + 2 OCPU/16GB + 2-10 nodes)</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">OKE cluster k8s 1.29 · single AD · auto-scale 1-3 nodes · VCN-native pod networking</div>
+      </div>
+
+      <h2>4.1 สร้าง OKE Cluster</h2>
+
+      <div class="notice">
+        <div class="notice-label">ใช้เวลา ~10 นาที</div>
+        <p>Provisioning OKE cluster ใช้เวลาประมาณ 10 นาที · ไปต้มกาแฟได้</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export AD1=$(oci iam availability-domain list \
+  --compartment-id $TENANCY_OCID \
+  --query "data[0].name" --raw-output)
+
+# Private subnet for OKE nodes
+export NODE_SUBNET_OCID=$(oci network subnet create \
+  --compartment-id $COMPARTMENT_OCID \
+  --vcn-id $VCN_OCID \
+  --cidr-block "10.30.1.0/24" \
+  --display-name "oke-nodes" \
+  --dns-label "okenodes" \
+  --prohibit-public-ip-on-vnic true \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)
+
+# Create OKE cluster
+export OKE_OCID=$(oci ce cluster create \
+  --compartment-id $COMPARTMENT_OCID \
+  --name $OKE_NAME \
+  --vcn-id $VCN_OCID \
+  --kubernetes-version "v1.29.1" \
+  --service-lb-subnet-ids "[\"$PUBLIC_SUBNET_OCID\"]" \
+  --endpoint-public-ip-enabled true \
+  --wait-for-state SUCCEEDED \
+  --query "data.id" --raw-output)</pre></div>
+
+      <h2>4.2 สร้าง Node Pool (Non-Prod sizing)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci ce node-pool create \
+  --compartment-id $COMPARTMENT_OCID \
+  --cluster-id $OKE_OCID \
+  --name "pool-nonprod" \
+  --kubernetes-version "v1.29.1" \
+  --node-shape "VM.Standard.E4.Flex" \
+  --node-shape-config '{"ocpus":1,"memoryInGBs":4}' \
+  --node-image-id $(oci ce node-pool-options get --node-pool-option-id all \
+    --query "data.sources[?contains(\"source-name\",'Oracle-Linux-8.10')].\"image-id\"|[0]" --raw-output) \
+  --size 1 \
+  --placement-configs "[{\"availabilityDomain\":\"$AD1\",\"subnetId\":\"$NODE_SUBNET_OCID\"}]" \
+  --ssh-public-key "$SSH_PUB_KEY" \
+  --wait-for-state SUCCEEDED</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">VM.Standard.E4.Flex</div>
+        <p>OCI's flexible shape · เลือก OCPU + memory ได้อิสระ · 1 OCPU = 2 vCPU (AMD EPYC) · Non-Prod ใช้ <strong>1 OCPU / 4 GB</strong> ราคา ~$30/mo · Prod ใช้ 2 OCPU / 16 GB ราคา ~$90/mo</p>
+      </div>
+
+      <h2>4.3 Get kubectl Config</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci ce cluster create-kubeconfig \
+  --cluster-id $OKE_OCID \
+  --file ~/.kube/config-nonprod \
+  --region $REGION \
+  --token-version 2.0.0 \
+  --kube-endpoint PUBLIC_ENDPOINT
+
+export KUBECONFIG=~/.kube/config-nonprod
+kubectl get nodes -o wide
+kubectl get nodes -L oci.oraclecloud.com/fault-domain</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"  "}{.status.nodeInfo.osImage}{"\n"}{end}'</pre></div>
+        <p>คาดว่าเห็น node 1 ตัว · OS = Oracle Linux 8</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 5 -->
+    <section class="step-page" data-step="5">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 5 / 11</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">Network</span>
+      </div>
+
+      <h1>K8s Gateway API Setup</h1>
+      <p class="lead">ติดตั้ง Gateway API controller (มาตรฐานใหม่แทน Ingress) สำหรับ routing traffic เข้า OKE</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">Gateway API CRDs + NGINX Gateway Controller deployed · ready to route HTTP/HTTPS traffic</div>
+      </div>
+
+      <h2>5.1 Install Gateway API CRDs</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
+
+kubectl get crd | grep gateway.networking.k8s.io</pre></div>
+
+      <div class="note">
+        <div class="note-label">Gateway API vs Ingress</div>
+        <p><strong>Gateway API</strong> เป็น successor ของ Ingress · มี role-based resources (Gateway = infra · HTTPRoute = app team) · รองรับ TCP/UDP native · multi-tenant ดีกว่า · เป็น CNCF standard</p>
+      </div>
+
+      <h2>5.2 Install NGINX Gateway Controller</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+
+helm install nginx-gateway nginx-stable/nginx-gateway-fabric \
+  -n nginx-gateway --create-namespace \
+  --set nginxGateway.replicaCount=1
+
+kubectl get pods -n nginx-gateway</pre></div>
+
+      <h2>5.3 สร้าง Namespaces สำหรับ Sub-Environments</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: queue-dev
+  labels: { env: dev, tier: app }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: queue-qa
+  labels: { env: qa, tier: app }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: queue-uat
+  labels: { env: uat, tier: app }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: queue-staging
+  labels: { env: staging, tier: app }
+EOF</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">4 Sub-Environments ใน Non-Prod เดียว</div>
+        <p>Non-Prod compartment เดียวมี 4 K8s namespaces: <code class="inline">queue-dev</code>, <code class="inline">queue-qa</code>, <code class="inline">queue-uat</code>, <code class="inline">queue-staging</code> · ใช้ infrastructure ร่วมกัน (DB, Cache, Streaming) แต่ data แยกตาม schema/topic prefix · ประหยัด cost</p>
+      </div>
+
+      <h2>5.4 สร้าง Gateway Resource</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: queue-gateway
+  namespace: queue-dev
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces: { from: All }
+EOF</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl get gateway -A
+kubectl get gatewayclasses</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 6 -->
+    <section class="step-page" data-step="6">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 6 / 11</span>
+        <span class="meta-chip time">⏱ 12 นาที</span>
+        <span class="meta-chip oci">Data</span>
+      </div>
+
+      <h1>OCI Database with PostgreSQL — Non-Prod</h1>
+      <p class="lead">PostgreSQL 16 · 2 OCPU/8GB · 100GB · <strong>single instance</strong> (no HA) · ราคา ~$150/mo</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">OCI Database PG 16 single-instance running · accessible from OKE via VCN private endpoint</div>
+      </div>
+
+      <div class="notice">
+        <div class="notice-label">No HA = potential downtime</div>
+        <p>Non-Prod ใช้ <strong>single instance</strong> ไม่มี standby · ถ้า AD ล่มหรือ maintenance · DB จะดาวน์ ~5-15 นาที · ยอมรับได้สำหรับ dev/qa · <strong>ห้ามใช้ pattern นี้ใน Prod</strong></p>
+      </div>
+
+      <h2>6.1 Private Data Subnet</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export DATA_SUBNET_OCID=$(oci network subnet create \
+  --compartment-id $COMPARTMENT_OCID \
+  --vcn-id $VCN_OCID \
+  --cidr-block "10.30.10.0/24" \
+  --display-name "private-data" \
+  --dns-label "data" \
+  --prohibit-public-ip-on-vnic true \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)</pre></div>
+
+      <h2>6.2 สร้าง PostgreSQL DB System</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export PG_PWD="$(openssl rand -base64 24 | tr -d '+/=' | head -c 28)Aa1!"
+echo "PG password (save!): $PG_PWD"
+
+cat > pg-config.json <<EOF
+{
+  "compartmentId": "$COMPARTMENT_OCID",
+  "displayName": "$PG_NAME",
+  "dbVersion": "16",
+  "shape": "PostgreSQL.VM.Standard.E4.Flex.2.32GB",
+  "instanceCount": 1,
+  "instanceMemorySizeInGBs": 8,
+  "instanceOcpuCount": 2,
+  "storageDetails": {
+    "systemType": "OCI_OPTIMIZED_STORAGE",
+    "isRegionallyDurable": false,
+    "availabilityDomain": "$AD1"
+  },
+  "networkDetails": {
+    "subnetId": "$DATA_SUBNET_OCID"
+  },
+  "credentials": {
+    "username": "pgadmin",
+    "passwordDetails": {"passwordType": "PLAIN_TEXT", "password": "$PG_PWD"}
+  }
+}
+EOF
+
+oci psql db-system create --from-json file://pg-config.json --wait-for-state ACTIVE</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Shape Naming Pattern</div>
+        <p>OCI PostgreSQL shape name = <code class="inline">PostgreSQL.VM.Standard.E4.Flex.{ocpu}.{ram}GB</code> · ตัวอย่าง <code class="inline">PostgreSQL.VM.Standard.E4.Flex.2.32GB</code> · เลือก OCPU + memory ตาม load · เริ่มจาก 2 OCPU/8 GB สำหรับ Non-Prod</p>
+      </div>
+
+      <h2>6.3 Create Database</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export PG_OCID=$(oci psql db-system list --compartment-id $COMPARTMENT_OCID \
+  --query "data.items[?\"display-name\"=='$PG_NAME'].id|[0]" --raw-output)
+
+export PG_FQDN=$(oci psql db-system get --db-system-id $PG_OCID \
+  --query "data.\"network-details\".\"private-ip\"" --raw-output)
+echo "PG endpoint: $PG_FQDN"
+
+# Create database via kubectl (จะใช้ in next step)</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci psql db-system get --db-system-id $PG_OCID \
+  --query "data.{name:\"display-name\",state:\"lifecycle-state\",version:\"db-version\",shape:shape}" --output table</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 7 -->
+    <section class="step-page" data-step="7">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 7 / 11</span>
+        <span class="meta-chip time">⏱ 8 นาที</span>
+        <span class="meta-chip oci">Data</span>
+      </div>
+
+      <h1>OCI Cache with Valkey 8.1 — Non-Prod</h1>
+      <p class="lead">Redis-compatible managed cache · <strong>single node</strong> · 1 vCPU/4GB · ราคา ~$35/mo</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">Valkey 8.1 single-node ready · accessible via private VCN endpoint</div>
+      </div>
+
+      <h2>7.1 สร้าง OCI Cache Cluster</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat > cache-config.json <<EOF
+{
+  "compartmentId": "$COMPARTMENT_OCID",
+  "displayName": "$CACHE_NAME",
+  "softwareVersion": "VALKEY_8_1",
+  "clusterMode": "NONCLUSTERED",
+  "shardCount": 1,
+  "nodeCount": 1,
+  "nodeMemoryInGBs": 4,
+  "subnetId": "$DATA_SUBNET_OCID"
+}
+EOF
+
+oci cache cluster create --from-json file://cache-config.json --wait-for-state ACTIVE</pre></div>
+
+      <div class="note">
+        <div class="note-label">Valkey 8.1 = Redis Fork</div>
+        <p>Valkey = open-source fork ของ Redis 7.2 (BSD-3 license) · เกิดหลัง Redis Inc เปลี่ยน license เป็น SSPL · <strong>100% drop-in compatible</strong> กับ Redis client (<code class="inline">go-redis</code>, <code class="inline">redis-py</code>) · ดีกว่าใน multi-threading I/O</p>
+      </div>
+
+      <h2>7.2 Get Cache Endpoint</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export CACHE_OCID=$(oci cache cluster list --compartment-id $COMPARTMENT_OCID \
+  --query "data.items[?\"display-name\"=='$CACHE_NAME'].id|[0]" --raw-output)
+
+export CACHE_ENDPOINT=$(oci cache cluster get --redis-cluster-id $CACHE_OCID \
+  --query "data.\"primary-fqdn\"" --raw-output)
+echo "Cache endpoint: $CACHE_ENDPOINT:6379"</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Cache Use Cases ใน Non-Prod</div>
+        <p>(1) <strong>Session cache</strong> - JWT tokens · 30-min TTL · (2) <strong>API response cache</strong> - branch list, customer profiles · 5-15 min TTL · (3) <strong>Rate limit counters</strong> - per-IP throttling · (4) <strong>Queue state cache</strong> - active queue per branch · faster lookup</p>
+      </div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci cache cluster get --redis-cluster-id $CACHE_OCID \
+  --query "data.{name:\"display-name\",state:\"lifecycle-state\",version:\"software-version\",endpoint:\"primary-fqdn\"}" --output table</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 8 -->
+    <section class="step-page" data-step="8">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 8 / 11</span>
+        <span class="meta-chip time">⏱ 8 นาที</span>
+        <span class="meta-chip oci">Messaging</span>
+      </div>
+
+      <h1>OCI Streaming — Non-Prod Pool</h1>
+      <p class="lead">Apache Kafka-compatible managed stream · 2 partitions/stream · 3-day retention</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">Stream pool dedicated for Non-Prod · 3 streams: queue.events, integration.events, notification.requests</div>
+      </div>
+
+      <h2>8.1 สร้าง Stream Pool</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export POOL_OCID=$(oci streaming admin stream-pool create \
+  --compartment-id $COMPARTMENT_OCID \
+  --name $STREAM_POOL \
+  --wait-for-state ACTIVE \
+  --query "data.id" --raw-output)
+echo "Stream Pool OCID: $POOL_OCID"</pre></div>
+
+      <h2>8.2 สร้าง Streams</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>for STREAM in queue.events integration.events notification.requests ; do
+  oci streaming admin stream create \
+    --compartment-id $COMPARTMENT_OCID \
+    --stream-pool-id $POOL_OCID \
+    --name $STREAM \
+    --partitions 2 \
+    --retention-in-hours 72 \
+    --wait-for-state ACTIVE
+done
+
+oci streaming admin stream list \
+  --compartment-id $COMPARTMENT_OCID \
+  --stream-pool-id $POOL_OCID \
+  --output table</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Stream Naming Convention</div>
+        <p>ใช้ชื่อเดียวกับ Prod (<code class="inline">queue.events</code>) แทนที่จะ prefix ด้วย "nonprod-" · แยกด้วย <strong>stream pool</strong> + <strong>compartment</strong> · ทำให้ code app ไม่ต้องแก้เวลาเปลี่ยน env</p>
+      </div>
+
+      <div class="notice">
+        <div class="notice-label">Retention 3 days = 72 hours</div>
+        <p>Non-Prod retention สั้น (3 วัน) เพื่อประหยัด · ถ้า debug ย้อนหลังต้องการนานกว่า · ปรับเพิ่มชั่วคราวได้ผ่าน <code class="inline">oci streaming admin stream update --retention-in-hours 168</code></p>
+      </div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci streaming admin stream-pool get --stream-pool-id $POOL_OCID \
+  --query "data.{name:name,state:\"lifecycle-state\"}" --output table</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 9 -->
+    <section class="step-page" data-step="9">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 9 / 11</span>
+        <span class="meta-chip time">⏱ 8 นาที</span>
+        <span class="meta-chip oci">Storage + Security</span>
+      </div>
+
+      <h1>Object Storage + OCI Vault</h1>
+      <p class="lead">Object Storage buckets (uploads/media/backups) + OCI Vault สำหรับเก็บ secrets</p>
+
+      <h2>9.1 สร้าง Object Storage Buckets</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>for SUFFIX_BUCKET in uploads public-media backups ; do
+  oci os bucket create \
+    --compartment-id $COMPARTMENT_OCID \
+    --name "${OS_BUCKET_PREFIX}-${SUFFIX_BUCKET}" \
+    --storage-tier Standard
+done
+
+oci os bucket list --compartment-id $COMPARTMENT_OCID --output table</pre></div>
+
+      <h2>9.2 OCI Vault + Secrets</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export VAULT_OCID=$(oci kms management vault create \
+  --compartment-id $COMPARTMENT_OCID \
+  --display-name "vault-nonprod-${SUFFIX}" \
+  --vault-type DEFAULT \
+  --wait-for-state ACTIVE \
+  --query "data.id" --raw-output)
+
+export VAULT_MGMT_ENDPOINT=$(oci kms management vault get --vault-id $VAULT_OCID \
+  --query "data.\"management-endpoint\"" --raw-output)
+
+# สร้าง master key
+export KEY_OCID=$(oci kms management key create \
+  --compartment-id $COMPARTMENT_OCID \
+  --endpoint $VAULT_MGMT_ENDPOINT \
+  --display-name "key-nonprod" \
+  --key-shape '{"algorithm":"AES","length":32}' \
+  --protection-mode SOFTWARE \
+  --wait-for-state ENABLED \
+  --query "data.id" --raw-output)</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Resource Principal · No Static Creds</div>
+        <p>OKE pods access OCI services โดยใช้ <strong>Resource Principal</strong> (instance-level identity) · ไม่ต้องฝัง API key ใน pod · เปลี่ยนผ่าน <code class="inline">OCI_RESOURCE_PRINCIPAL_VERSION=2.2</code> environment variable</p>
+      </div>
+
+      <h2>9.3 เก็บ Secrets ลง Vault</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci vault secret create-base64 \
+  --compartment-id $COMPARTMENT_OCID \
+  --secret-name "pg-dsn-nonprod" \
+  --vault-id $VAULT_OCID \
+  --key-id $KEY_OCID \
+  --secret-content-content "$(echo -n "host=$PG_FQDN port=5432 user=pgadmin password=$PG_PWD dbname=queue sslmode=require" | base64)"</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci vault secret list --compartment-id $COMPARTMENT_OCID --output table</pre></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 10 -->
+    <section class="step-page" data-step="10">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 10 / 11</span>
+        <span class="meta-chip time">⏱ 20 นาที</span>
+        <span class="meta-chip oci">Deploy</span>
+      </div>
+
+      <h1>Deploy Queue API to dev namespace</h1>
+      <p class="lead">Build Go/Echo app · push to OCIR · deploy to <code class="inline">queue-dev</code> namespace</p>
+
+      <h2>10.1 Build &amp; Push to OCIR</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cd ~/queue-api  # use code from earlier codelab
+
+# Build + push to OCIR
+docker buildx build --platform linux/amd64 \
+  -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:0.1.0-dev \
+  --push .</pre></div>
+
+      <div class="note">
+        <div class="note-label">OCIR Auth</div>
+        <p>OCIR ใช้ login: <code class="inline">docker login ${REGION}.ocir.io -u "${OS_NAMESPACE}/{username}" -p {auth-token}</code> · auth-token สร้างได้ที่ OCI Console → User Settings → Auth Tokens</p>
+      </div>
+
+      <h2>10.2 Deploy to queue-dev namespace</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -n queue-dev -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: queue-api, env: dev }
+  template:
+    metadata:
+      labels: { app: queue-api, env: dev }
+    spec:
+      containers:
+      - name: api
+        image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:0.1.0-dev
+        ports: [{containerPort: 8080}]
+        env:
+        - name: DB_DSN
+          value: "host=${PG_FQDN} port=5432 user=pgadmin dbname=queue sslmode=require"
+        - name: CACHE_ENDPOINT
+          value: "${CACHE_ENDPOINT}:6379"
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits:   {cpu: 500m, memory: 512Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-api
+spec:
+  selector: {app: queue-api}
+  ports: [{port: 80, targetPort: 8080}]
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: queue-api-route
+spec:
+  parentRefs:
+  - name: queue-gateway
+  hostnames: ["dev.queue.nonprod.local"]
+  rules:
+  - matches:
+    - path: {type: PathPrefix, value: /}
+    backendRefs:
+    - name: queue-api
+      port: 80
+EOF</pre></div>
+
+      <h2>10.3 Watch Deployment</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl get pods -n queue-dev -w
+kubectl logs -n queue-dev -l app=queue-api --tail=20 -f</pre></div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 11 -->
+    <section class="step-page" data-step="11">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 11 / 11</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">Validate</span>
+      </div>
+
+      <h1>Validate &amp; Teardown</h1>
+      <p class="lead">ตรวจสอบ end-to-end · ลบ resources ทิ้งเพื่อประหยัด</p>
+
+      <h2>11.1 Smoke Test</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>curl -X POST "http://$LB_PUBLIC_IP/v1/queues" \
+  -H "Host: dev.queue.nonprod.local" \
+  -H "Content-Type: application/json" \
+  -d '{"branch_id":"AIS-DEV-0001"}'</pre></div>
+
+      <h2>11.2 Production Readiness Review (Non-Prod)</h2>
+
+      <div class="checklist">
+        <div class="checklist-item"><input type="checkbox"><label>K8s namespaces created: dev, qa, uat, staging</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>OCI Database PostgreSQL · backup retention 7 days set</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>OCI Cache · Valkey 8.1 single node accessible</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>OCI Streaming · 3 streams active · 2 partitions each</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>OCI WAF in Detection mode (logging works)</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Object Storage buckets accessible from OKE</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>OCI Vault secrets readable from OKE pods (Resource Principal)</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Cost monitoring alert set on compartment (e.g., $400/mo threshold)</label></div>
+      </div>
+
+      <h2>11.3 Teardown (สำคัญ!)</h2>
+
+      <div class="danger-box">
+        คำสั่งนี้ลบทุกอย่างใน compartment Non-Prod ทิ้ง · รันเมื่อเรียนเสร็จ
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># 1. Delete OKE node pool first (else cluster delete fails)
+oci ce node-pool list --compartment-id $COMPARTMENT_OCID \
+  --query "data[].id" --raw-output | \
+  xargs -I {} oci ce node-pool delete --node-pool-id {} --force
+
+# 2. Delete OKE cluster
+oci ce cluster delete --cluster-id $OKE_OCID --force --wait-for-state DELETED
+
+# 3. Delete DB
+oci psql db-system delete --db-system-id $PG_OCID --force --wait-for-state DELETED
+
+# 4. Delete Cache
+oci cache cluster delete --redis-cluster-id $CACHE_OCID --force --wait-for-state DELETED
+
+# 5. Delete Stream Pool (cascades streams)
+oci streaming admin stream-pool delete --stream-pool-id $POOL_OCID --force
+
+# 6. Delete LB + WAF
+oci lb load-balancer delete --load-balancer-id $LB_OCID --force --wait-for-state DELETED
+
+# 7. Empty + delete buckets
+for B in $(oci os bucket list --compartment-id $COMPARTMENT_OCID --query "data[].name" --raw-output); do
+  oci os bucket delete --bucket-name "$B" --force --empty
+done
+
+# 8. Finally: delete compartment (cascade deletes vault etc.)
+oci iam compartment delete --compartment-id $COMPARTMENT_OCID --force
+
+echo "Teardown complete — cost stops in ~5 minutes"</pre></div>
+
+      <h2>🎉 Done!</h2>
+
+      <p>คุณได้เรียนการ deploy <strong>OCI Non-Prod environment</strong> ครบทุก component แล้ว · พร้อมเข้าใจ trade-offs ระหว่าง Non-Prod กับ Prod</p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">Resources created</div><div class="stat-value">~15</div></div>
+        <div class="stat"><div class="stat-label">K8s namespaces</div><div class="stat-value">4</div></div>
+        <div class="stat"><div class="stat-label">Cost saved vs Prod</div><div class="stat-value">~63%</div></div>
+      </div>
+
+      <h3>เรียนต่อ</h3>
+      <ul>
+        <li>เปรียบเทียบกับ Prod codelab สำหรับเข้าใจ HA pattern</li>
+        <li>Setup CI/CD pipeline (Argo CD / Flux) สำหรับ promote dev → qa → uat → staging → prod</li>
+        <li>Configure Grafana Cloud observability บน Non-Prod</li>
+      </ul>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จสิ้น 🎉</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const totalSteps = 12;
+  let currentStep = 0;
+  let completed = new Set();
+
+  // Map: which architecture components are introduced/completed at each step
+  const stepCompletions = {
+    0: [],  // Welcome
+    1: [],  // Prerequisites (tools only · no cloud resources)
+    2: ['tenancy', 'vcn'],
+    3: ['waf', 'lb'],
+    4: ['oke', 'oke-worker'],
+    5: ['gateway-api'],
+    6: ['db'],
+    7: ['cache'],
+    8: ['streaming'],
+    9: ['object-storage', 'vault'],
+    10: ['pods'],
+    11: ['pods'], // Validate (everything stays done)
+  };
+
+  // Map: which arrows become active when source+target are both done
+  const arrowDeps = {
+    'arr-user-waf': ['waf'],
+    'arr-waf-lb': ['waf', 'lb'],
+    'arr-lb-oke': ['lb', 'oke'],
+    'arr-oke-cache': ['oke', 'cache'],
+    'arr-oke-stream': ['oke', 'streaming'],
+    'arr-oke-db': ['oke', 'db'],
+    'arr-db-storage': ['db', 'object-storage'],
+  };
+
+  function updateArchProgress(step) {
+    // Calculate all done components up to current step
+    const done = new Set();
+    const justDoneInThisStep = new Set(stepCompletions[step] || []);
+    for (let s = 0; s <= step; s++) {
+      (stepCompletions[s] || []).forEach(c => done.add(c));
+    }
+
+    // Apply .done class to components
+    document.querySelectorAll('#archProgress .arch-comp').forEach(comp => {
+      const id = comp.dataset.id;
+      const isDone = done.has(id);
+      comp.classList.toggle('done', isDone);
+      // Highlight just-completed in this step
+      comp.classList.toggle('just-done', justDoneInThisStep.has(id) && isDone);
+    });
+
+    // Apply .active class to arrows where both endpoints are done
+    Object.entries(arrowDeps).forEach(([arrowId, deps]) => {
+      const arrow = document.getElementById(arrowId);
+      if (!arrow) return;
+      const allDone = deps.every(d => done.has(d));
+      arrow.classList.toggle('active', allDone);
+      // Set color based on context
+      if (allDone) {
+        if (arrowId === 'arr-oke-cache') arrow.style.setProperty('--c', '#E91E63');
+        else if (arrowId === 'arr-oke-stream') arrow.style.setProperty('--c', '#231F20');
+        else if (arrowId === 'arr-oke-db' || arrowId.startsWith('arr-')) arrow.style.setProperty('--c', '#1F5BA8');
+        else arrow.style.setProperty('--c', '#5F6368');
+      }
+    });
+  }
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('oci-nonprod-codelab') || '{}');
+    completed = new Set(saved.completed || []);
+    if (typeof saved.current === 'number') currentStep = saved.current;
+  } catch {}
+
+  function saveProgress() {
+    localStorage.setItem('oci-nonprod-codelab', JSON.stringify({
+      completed: Array.from(completed),
+      current: currentStep,
+    }));
+  }
+
+  function showStep(n) {
+    currentStep = Math.max(0, Math.min(totalSteps - 1, n));
+    document.querySelectorAll('.step-page').forEach(s => {
+      s.classList.toggle('active', Number(s.dataset.step) === currentStep);
+    });
+    document.querySelectorAll('.nav-step').forEach(s => {
+      const stepN = Number(s.dataset.step);
+      s.classList.toggle('active', stepN === currentStep);
+      s.classList.toggle('done', completed.has(stepN));
+    });
+    updateProgress();
+    updateArchProgress(currentStep);  // ← Update architecture progress diagram
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    saveProgress();
+  }
+
+  function updateProgress() {
+    const done = completed.size;
+    const denom = 11;
+    const pct = Math.round((done / denom) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = done + ' / ' + denom + ' ขั้น';
+  }
+
+  function nextStep() { showStep(currentStep + 1); }
+  function prevStep() { showStep(currentStep - 1); }
+  function completeAndNext() {
+    completed.add(currentStep);
+    showStep(currentStep + 1);
+  }
+
+  document.querySelectorAll('.nav-step').forEach(s => {
+    s.addEventListener('click', () => showStep(Number(s.dataset.step)));
+  });
+
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('copy-btn')) {
+      const pre = e.target.parentElement.querySelector('pre');
+      const text = pre ? pre.innerText : '';
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = e.target.textContent;
+        e.target.textContent = '✓ Copied';
+        e.target.classList.add('copied');
+        setTimeout(() => {
+          e.target.textContent = orig;
+          e.target.classList.remove('copied');
+        }, 1400);
+      });
+    }
+  });
+
+  // URL query support
+  const urlParams = new URLSearchParams(location.search);
+  const queryStep = urlParams.get('step');
+  if (queryStep !== null) {
+    const n = parseInt(queryStep, 10);
+    if (!isNaN(n)) currentStep = Math.max(0, Math.min(totalSteps - 1, n));
+  }
+
+  showStep(currentStep);
+</script>
+</body>
+</html>

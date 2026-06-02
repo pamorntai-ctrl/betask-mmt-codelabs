@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1500" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <!-- ===== Defs ===== -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="ociRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F80000"/>
+      <stop offset="100%" stop-color="#C74634"/>
+    </linearGradient>
+    <linearGradient id="ociBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4A90E2"/>
+      <stop offset="100%" stop-color="#1F5BA8"/>
+    </linearGradient>
+    <linearGradient id="ociGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3CC177"/>
+      <stop offset="100%" stop-color="#34A853"/>
+    </linearGradient>
+    <linearGradient id="userPurple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8E7CC3"/>
+      <stop offset="100%" stop-color="#6A4FBE"/>
+    </linearGradient>
+    <linearGradient id="valkeyPink" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E91E63"/>
+      <stop offset="100%" stop-color="#AD1457"/>
+    </linearGradient>
+
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1F5BA8"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#C74634"/>
+    </marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5F6368"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#34A853"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F46800"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="1500" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="800" y="44" text-anchor="middle" font-size="26" font-weight="700" fill="#C74634">
+    High-Level Cloud Architecture — Oracle Cloud Infrastructure (OCI)
+  </text>
+  <text x="800" y="70" text-anchor="middle" font-size="14" fill="#5F6368">
+    OKE · OCI Streaming · OCI Cache (Valkey 8.1) · OCI Database (PostgreSQL) · OCI WAF · Singapore Region
+  </text>
+
+  <!-- External label -->
+  <text x="100" y="120" font-size="12" font-weight="600" fill="#5F6368" letter-spacing="2">EXTERNAL / INTERNET</text>
+  <line x1="40" y1="130" x2="220" y2="130" stroke="#D0D7DE" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ============================================================ -->
+  <!-- OCI TENANCY OUTER ENVELOPE                                    -->
+  <!-- ============================================================ -->
+  <rect x="240" y="140" width="1360" height="730" rx="20"
+        fill="#FEF5F4" fill-opacity="0.55"
+        stroke="#C74634" stroke-width="2.5" stroke-dasharray="10 6"/>
+  <g transform="translate(258,154)">
+    <rect width="440" height="28" rx="14" fill="#C74634"/>
+    <text x="220" y="19" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">☁ Oracle Cloud Infrastructure · Tenancy: AIS-MMT · Region: Singapore</text>
+  </g>
+
+  <!-- ============ USERS (left) ============ -->
+  <g transform="translate(60,200)" filter="url(#shadow)">
+    <rect width="140" height="140" rx="12" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1.5"/>
+    <g transform="translate(50,18)">
+      <circle cx="20" cy="20" r="16" fill="url(#userPurple)"/>
+      <circle cx="20" cy="14" r="6" fill="#FFFFFF"/>
+      <path d="M8,32 Q8,24 20,24 Q32,24 32,32 L32,38 L8,38 Z" fill="#FFFFFF"/>
+    </g>
+    <text x="70" y="100" text-anchor="middle" font-size="13" font-weight="600" fill="#1F2328">Users /</text>
+    <text x="70" y="116" text-anchor="middle" font-size="13" font-weight="600" fill="#1F2328">Client Apps</text>
+  </g>
+
+  <!-- ============ OCI WAF + LOAD BALANCER (Edge) ============ -->
+  <g transform="translate(260,200)" filter="url(#shadow)">
+    <rect width="160" height="140" rx="12" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1.5"/>
+    <g transform="translate(50,14)">
+      <path d="M30,8 L40,18 L40,38 L30,48 L20,38 L20,18 Z" fill="url(#ociRed)"/>
+      <text x="30" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">🛡</text>
+    </g>
+    <text x="80" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#C74634">OCI WAF</text>
+    <text x="80" y="98" text-anchor="middle" font-size="11" fill="#1F2328">OWASP CRS · Bot Mgmt</text>
+    <text x="80" y="114" text-anchor="middle" font-size="10" fill="#5F6368">DDoS · Rate Limit · Geo-block</text>
+    <text x="80" y="128" text-anchor="middle" font-size="10" fill="#5F6368">+ OCI DNS · Anycast</text>
+  </g>
+
+  <!-- ============ OCI LOAD BALANCER ============ -->
+  <g transform="translate(480,200)" filter="url(#shadow)">
+    <rect width="160" height="140" rx="12" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1.5"/>
+    <g transform="translate(50,14)">
+      <polygon points="30,4 56,18 56,46 30,60 4,46 4,18" fill="url(#ociBlue)"/>
+      <path d="M30,18 L30,32 M30,32 L22,40 M30,32 L38,40 M22,40 L22,46 M38,40 L38,46" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="22" cy="48" r="2.5" fill="#FFFFFF"/>
+      <circle cx="38" cy="48" r="2.5" fill="#FFFFFF"/>
+    </g>
+    <text x="80" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#1F5BA8">OCI Load Balancer</text>
+    <text x="80" y="122" text-anchor="middle" font-size="11" fill="#1F2328">Flexible LB · L7</text>
+    <text x="80" y="136" text-anchor="middle" font-size="10" fill="#5F6368">10–8000 Mbps auto-scale</text>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- INTERNAL POSITIONING GROUP (no visual frame)                  -->
+  <!-- ============================================================ -->
+  <g transform="translate(680,150)">
+    <!-- Singapore region label (subtle) -->
+    <text x="900" y="40" text-anchor="end" font-size="11" font-style="italic" fill="#5F6368">📍 Region: ap-singapore-1 · 3 ADs</text>
+
+    <!-- ============ OKE CLUSTER (top-aligned with LB at y=200) ============ -->
+    <g transform="translate(40,50)">
+      <rect width="560" height="340" rx="12" fill="#FFFFFF" stroke="#C74634" stroke-width="1.5"/>
+      <rect width="560" height="36" rx="12" fill="#C74634"/>
+      <rect y="24" width="560" height="12" fill="#C74634"/>
+      <text x="280" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">OKE — Oracle Kubernetes Engine</text>
+      <text x="280" y="56" text-anchor="middle" font-size="11" fill="#5F6368">K8s Gateway API · Multi-AD · containerd · HPA + Cluster Autoscaler</text>
+
+      <!-- AD-1 -->
+      <g transform="translate(20,80)">
+        <rect width="130" height="240" rx="10" fill="#F1F8E9" stroke="#34A853" stroke-width="1.2"/>
+        <text x="65" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#34A853">AD-1</text>
+
+        <g transform="translate(7,25)">
+          <rect width="116" height="210" rx="6" fill="#FFFFFF" stroke="#C74634" stroke-width="1.2"/>
+          <path d="M0,6 Q0,0 6,0 L110,0 Q116,0 116,6 L116,20 L0,20 Z" fill="#C74634"/>
+          <text x="58" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">OKE Worker Node</text>
+
+          <g transform="translate(6,26)">
+            <rect width="104" height="18" rx="3" fill="#326CE5"/>
+            <text x="62" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">containerd · kubelet</text>
+          </g>
+
+          <!-- FE Pod -->
+          <g transform="translate(6,50)">
+            <rect width="104" height="36" rx="4" fill="#E3F2FD" stroke="#1976D2" stroke-width="1" stroke-dasharray="3 2"/>
+            <rect width="6" height="36" rx="2" fill="#1976D2"/>
+            <text x="14" y="14" font-size="9" font-weight="700" fill="#1976D2">FE Pod</text>
+            <text x="14" y="26" font-size="7" fill="#5F6368">Counter UI · Vue 3</text>
+          </g>
+
+          <!-- BE Pod -->
+          <g transform="translate(6,92)">
+            <rect width="104" height="36" rx="4" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1" stroke-dasharray="3 2"/>
+            <rect width="6" height="36" rx="2" fill="#7B1FA2"/>
+            <text x="14" y="14" font-size="9" font-weight="700" fill="#7B1FA2">BE Pod</text>
+            <text x="14" y="26" font-size="7" fill="#5F6368">Admin UI · Vue 3</text>
+          </g>
+
+          <!-- API Pod -->
+          <g transform="translate(6,134)">
+            <rect width="104" height="36" rx="4" fill="#E0F2F1" stroke="#00897B" stroke-width="1" stroke-dasharray="3 2"/>
+            <rect width="6" height="36" rx="2" fill="#00897B"/>
+            <text x="14" y="14" font-size="9" font-weight="700" fill="#00897B">API Pod</text>
+            <text x="14" y="26" font-size="7" fill="#5F6368">Go · Echo · GORM</text>
+          </g>
+
+          <text x="58" y="184" text-anchor="middle" font-size="8" fill="#5F6368">VM.Standard.E4.Flex · 2 OCPU</text>
+          <text x="58" y="194" text-anchor="middle" font-size="7" fill="#5F6368">Oracle Linux 8 · K8s 1.29+</text>
+          <text x="58" y="206" text-anchor="middle" font-size="7" font-style="italic" fill="#5F6368">+ Pods scaled across nodes</text>
+        </g>
+      </g>
+
+      <!-- AD-2 -->
+      <g transform="translate(170,80)">
+        <rect width="130" height="240" rx="10" fill="#FFF3E0" stroke="#F9A825" stroke-width="1.2"/>
+        <text x="65" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#E68A00">AD-2</text>
+
+        <g transform="translate(7,25)">
+          <rect width="116" height="210" rx="6" fill="#FFFFFF" stroke="#C74634" stroke-width="1.2"/>
+          <path d="M0,6 Q0,0 6,0 L110,0 Q116,0 116,6 L116,20 L0,20 Z" fill="#C74634"/>
+          <text x="58" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">OKE Worker Node</text>
+
+          <g transform="translate(6,26)">
+            <rect width="104" height="18" rx="3" fill="#326CE5"/>
+            <text x="62" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">containerd · kubelet</text>
+          </g>
+
+          <g transform="translate(6,50)">
+            <rect width="104" height="36" rx="4" fill="#E3F2FD" stroke="#1976D2" stroke-width="1" stroke-dasharray="3 2"/>
+            <rect width="6" height="36" rx="2" fill="#1976D2"/>
+            <text x="14" y="14" font-size="9" font-weight="700" fill="#1976D2">FE Pod</text>
+            <text x="14" y="26" font-size="7" fill="#5F6368">Counter UI · Vue 3</text>
+          </g>
+
+          <g transform="translate(6,92)">
+            <rect width="104" height="36" rx="4" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1" stroke-dasharray="3 2"/>
+            <rect width="6" height="36" rx="2" fill="#7B1FA2"/>
+            <text x="14" y="14" font-size="9" font-weight="700" fill="#7B1FA2">BE Pod</text>
+            <text x="14" y="26" font-size="7" fill="#5F6368">Admin UI · Vue 3</text>
+          </g>
+
+          <g transform="translate(6,134)">
+            <rect width="104" height="36" rx="4" fill="#E0F2F1" stroke="#00897B" stroke-width="1" stroke-dasharray="3 2"/>
+            <rect width="6" height="36" rx="2" fill="#00897B"/>
+            <text x="14" y="14" font-size="9" font-weight="700" fill="#00897B">API Pod</text>
+            <text x="14" y="26" font-size="7" fill="#5F6368">Go · Echo · GORM</text>
+          </g>
+
+          <text x="58" y="184" text-anchor="middle" font-size="8" fill="#5F6368">VM.Standard.E4.Flex · 2 OCPU</text>
+          <text x="58" y="194" text-anchor="middle" font-size="7" fill="#5F6368">Oracle Linux 8 · K8s 1.29+</text>
+          <text x="58" y="206" text-anchor="middle" font-size="7" font-style="italic" fill="#5F6368">+ Pods scaled across nodes</text>
+        </g>
+      </g>
+
+      <!-- K8s Gateway API + Services (Logical) — moved up to fit inside OKE cluster -->
+      <g transform="translate(330,80)">
+        <rect width="220" height="240" rx="12" fill="#FFF5F5" stroke="#C74634" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="110" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#C74634">K8s Gateway API</text>
+        <text x="110" y="32" text-anchor="middle" font-size="9" fill="#5F6368">HTTPRoute · Gateway · TLS</text>
+
+        <!-- frontend-service -->
+        <g transform="translate(10,44)">
+          <rect width="200" height="36" rx="4" fill="#FFFFFF" stroke="#1976D2" stroke-width="1"/>
+          <rect width="5" height="36" rx="2" fill="#1976D2"/>
+          <text x="14" y="14" font-size="9" font-weight="700" fill="#1976D2">frontend-service</text>
+          <text x="14" y="25" font-size="8" fill="#5F6368">port 3000 · Vue Counter UI</text>
+          <text x="14" y="33" font-size="7" font-style="italic" fill="#5F6368">→ FE Pods (AD-1 + AD-2)</text>
+        </g>
+
+        <!-- backoffice-service -->
+        <g transform="translate(10,88)">
+          <rect width="200" height="36" rx="4" fill="#FFFFFF" stroke="#7B1FA2" stroke-width="1"/>
+          <rect width="5" height="36" rx="2" fill="#7B1FA2"/>
+          <text x="14" y="14" font-size="9" font-weight="700" fill="#7B1FA2">backoffice-service</text>
+          <text x="14" y="25" font-size="8" fill="#5F6368">port 3001 · Vue Admin UI</text>
+          <text x="14" y="33" font-size="7" font-style="italic" fill="#5F6368">→ BE Pods (AD-1 + AD-2)</text>
+        </g>
+
+        <!-- internal-api service -->
+        <g transform="translate(10,132)">
+          <rect width="200" height="36" rx="4" fill="#FFFFFF" stroke="#00897B" stroke-width="1.5"/>
+          <rect width="5" height="36" rx="2" fill="#00897B"/>
+          <text x="14" y="14" font-size="9" font-weight="700" fill="#00897B">internal-api</text>
+          <text x="14" y="25" font-size="8" fill="#5F6368">port 8080 · Go API · HPA 2–50</text>
+          <text x="14" y="33" font-size="7" font-style="italic" fill="#5F6368">→ API Pods (AD-1 + AD-2)</text>
+        </g>
+
+        <g transform="translate(10,178)">
+          <rect width="200" height="54" rx="4" fill="#FFFBEB" stroke="#F9A825" stroke-width="0.8" stroke-dasharray="2 1"/>
+          <text x="100" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="#E68A00">⚙ Topology Spread</text>
+          <text x="100" y="26" text-anchor="middle" font-size="7" fill="#5F6368">topologyKey: oci.oraclecloud.com/fault-domain</text>
+          <text x="100" y="37" text-anchor="middle" font-size="7" fill="#5F6368">maxSkew: 1 · whenUnsatisfiable: DoNotSchedule</text>
+          <text x="100" y="48" text-anchor="middle" font-size="7" font-style="italic" fill="#5F6368">→ Pods distributed across AD-1 + AD-2</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- ============ OCI CACHE (VALKEY 8.1) — above Streaming ============ -->
+    <g transform="translate(620,90)">
+      <rect width="170" height="160" rx="10" fill="#FFFFFF" stroke="#E91E63" stroke-width="1.5"/>
+      <rect width="170" height="32" rx="10" fill="url(#valkeyPink)"/>
+      <rect y="22" width="170" height="10" fill="url(#valkeyPink)"/>
+      <text x="85" y="14" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">OCI Cache (Valkey 8.1)</text>
+      <text x="85" y="26" text-anchor="middle" font-size="8" fill="#FFFFFF">Redis-compatible · managed</text>
+
+      <!-- Primary - AD-1 -->
+      <g transform="translate(8,42)">
+        <rect width="74" height="78" rx="6" fill="#F1F8E9" stroke="#34A853" stroke-width="1.2"/>
+        <text x="37" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#34A853">● AD-1</text>
+        <text x="37" y="25" text-anchor="middle" font-size="9" font-weight="700" fill="#1F2328">Primary</text>
+        <g transform="translate(28,30)">
+          <circle cx="9" cy="9" r="9" fill="#E91E63"/>
+          <text x="9" y="13" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">V</text>
+        </g>
+        <text x="37" y="64" text-anchor="middle" font-size="8" fill="#5F6368">2 vCPU · 8 GB</text>
+        <text x="37" y="73" text-anchor="middle" font-size="7" fill="#E91E63" font-style="italic">R/W</text>
+      </g>
+
+      <!-- Replica - AD-2 -->
+      <g transform="translate(90,42)">
+        <rect width="74" height="78" rx="6" fill="#FFF3E0" stroke="#F9A825" stroke-width="1.2"/>
+        <text x="37" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#E68A00">● AD-2</text>
+        <text x="37" y="25" text-anchor="middle" font-size="9" font-weight="700" fill="#1F2328">Replica</text>
+        <g transform="translate(28,30)">
+          <circle cx="9" cy="9" r="9" fill="#E91E63" opacity="0.8"/>
+          <text x="9" y="13" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">V</text>
+        </g>
+        <text x="37" y="64" text-anchor="middle" font-size="8" fill="#5F6368">Sync</text>
+        <text x="37" y="73" text-anchor="middle" font-size="7" fill="#5F6368" font-style="italic">Read-only</text>
+      </g>
+
+      <!-- Sync arrow -->
+      <path d="M80,80 L90,80" stroke="#34A853" stroke-width="1.8" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="4 2"/>
+      <path d="M90,92 L80,92" stroke="#34A853" stroke-width="1.8" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="4 2"/>
+
+      <rect x="6" y="124" width="158" height="30" rx="3" fill="#FAFBFC" stroke="#D0D7DE" stroke-width="0.8"/>
+      <text x="85" y="135" text-anchor="middle" font-size="8" font-weight="700" fill="#E91E63">⚡ Session · API · Rate Limit cache</text>
+      <text x="85" y="146" text-anchor="middle" font-size="7" fill="#5F6368">99.95% SLA · TLS 1.2+</text>
+    </g>
+
+    <!-- ============ OCI STREAMING — Below Cache ============ -->
+    <g transform="translate(620,270)">
+      <rect width="170" height="180" rx="10" fill="#FFFFFF" stroke="#231F20" stroke-width="1.5"/>
+      <rect width="170" height="32" rx="10" fill="#231F20"/>
+      <rect y="22" width="170" height="10" fill="#231F20"/>
+      <g transform="translate(8,6)">
+        <circle cx="9" cy="5" r="3" fill="#FFFFFF"/>
+        <circle cx="4" cy="17" r="2.5" fill="#FFFFFF"/>
+        <circle cx="14" cy="17" r="2.5" fill="#FFFFFF"/>
+        <line x1="9" y1="8" x2="5" y2="14" stroke="#FFFFFF" stroke-width="1"/>
+        <line x1="9" y1="8" x2="13" y2="14" stroke="#FFFFFF" stroke-width="1"/>
+      </g>
+      <text x="92" y="14" text-anchor="middle" font-size="10.5" font-weight="700" fill="#FFFFFF">OCI Streaming</text>
+      <text x="92" y="26" text-anchor="middle" font-size="8" fill="#FFFFFF">Kafka API · Managed</text>
+
+      <g transform="translate(6,40)">
+        <rect width="74" height="102" rx="6" fill="#F1F8E9" stroke="#34A853" stroke-width="1.2"/>
+        <text x="37" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#34A853">● AD-1</text>
+        <text x="37" y="25" text-anchor="middle" font-size="9" font-weight="700" fill="#1F2328">Cell 1</text>
+        <line x1="6" y1="31" x2="68" y2="31" stroke="#34A853" stroke-width="0.6" stroke-dasharray="2 1"/>
+        <text x="37" y="44" text-anchor="middle" font-size="8.5" font-weight="700" fill="#34A853">★ Leader:</text>
+        <text x="37" y="55" text-anchor="middle" font-size="9" font-weight="600" fill="#1F2328">P0, P2</text>
+        <line x1="6" y1="61" x2="68" y2="61" stroke="#5F6368" stroke-width="0.4" stroke-dasharray="1 1"/>
+        <text x="37" y="74" text-anchor="middle" font-size="8.5" font-weight="700" fill="#5F6368">Follower:</text>
+        <text x="37" y="85" text-anchor="middle" font-size="9" font-weight="600" fill="#1F2328">P1, P3</text>
+        <text x="37" y="98" text-anchor="middle" font-size="7.5" font-style="italic" fill="#5F6368">Oracle-managed</text>
+      </g>
+
+      <g transform="translate(90,40)">
+        <rect width="74" height="102" rx="6" fill="#FFF3E0" stroke="#F9A825" stroke-width="1.2"/>
+        <text x="37" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#E68A00">● AD-2</text>
+        <text x="37" y="25" text-anchor="middle" font-size="9" font-weight="700" fill="#1F2328">Cell 2</text>
+        <line x1="6" y1="31" x2="68" y2="31" stroke="#E68A00" stroke-width="0.6" stroke-dasharray="2 1"/>
+        <text x="37" y="44" text-anchor="middle" font-size="8.5" font-weight="700" fill="#E68A00">★ Leader:</text>
+        <text x="37" y="55" text-anchor="middle" font-size="9" font-weight="600" fill="#1F2328">P1, P3</text>
+        <line x1="6" y1="61" x2="68" y2="61" stroke="#5F6368" stroke-width="0.4" stroke-dasharray="1 1"/>
+        <text x="37" y="74" text-anchor="middle" font-size="8.5" font-weight="700" fill="#5F6368">Follower:</text>
+        <text x="37" y="85" text-anchor="middle" font-size="9" font-weight="600" fill="#1F2328">P0, P2</text>
+        <text x="37" y="98" text-anchor="middle" font-size="7.5" font-style="italic" fill="#5F6368">Oracle-managed</text>
+      </g>
+
+      <path d="M80,82 L90,82" stroke="#34A853" stroke-width="1.8" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="4 2"/>
+      <path d="M90,96 L80,96" stroke="#34A853" stroke-width="1.8" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="4 2"/>
+
+      <rect x="6" y="146" width="158" height="28" rx="3" fill="#FAFBFC" stroke="#D0D7DE" stroke-width="0.8"/>
+      <text x="85" y="156" text-anchor="middle" font-size="8" font-weight="700" fill="#34A853">⚡ Multi-AD · 99.95% SLA</text>
+      <text x="85" y="166" text-anchor="middle" font-size="7" fill="#5F6368">queue · integration · notification</text>
+    </g>
+
+    <!-- ============ OCI DATABASE POSTGRES ============ -->
+    <g transform="translate(40,460)">
+      <rect width="700" height="220" rx="12" fill="#FFFFFF" stroke="#C74634" stroke-width="1.5"/>
+      <rect width="700" height="36" rx="12" fill="#C74634"/>
+      <rect y="24" width="700" height="12" fill="#C74634"/>
+      <text x="350" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">OCI Database with PostgreSQL 16 · Multi-AD HA (99.95% SLA)</text>
+
+      <!-- Primary AD-1 -->
+      <g transform="translate(40,70)">
+        <rect width="260" height="130" rx="10" fill="#F1F8E9" stroke="#34A853" stroke-width="1.2"/>
+        <text x="14" y="22" font-size="11" font-weight="700" fill="#34A853">● PRIMARY · AD-1</text>
+        <g transform="translate(20,32)">
+          <ellipse cx="35" cy="14" rx="32" ry="10" fill="url(#ociBlue)"/>
+          <path d="M3,14 L3,70 Q3,80 35,80 Q67,80 67,70 L67,14" fill="url(#ociBlue)"/>
+          <ellipse cx="35" cy="14" rx="32" ry="10" fill="#4A90E2"/>
+          <ellipse cx="35" cy="34" rx="32" ry="10" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.6"/>
+          <ellipse cx="35" cy="54" rx="32" ry="10" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.6"/>
+        </g>
+        <text x="110" y="60" font-size="11" font-weight="600" fill="#1F2328">PostgreSQL 16</text>
+        <text x="110" y="78" font-size="10" fill="#5F6368">VM.Standard.E4.Flex</text>
+        <text x="110" y="92" font-size="10" fill="#5F6368">4 OCPU · 16 GB RAM</text>
+        <text x="110" y="106" font-size="10" fill="#5F6368">256 GB Block Storage</text>
+        <text x="110" y="122" font-size="10" font-style="italic" fill="#34A853">Read / Write</text>
+      </g>
+
+      <!-- Standby AD-2 -->
+      <g transform="translate(400,70)">
+        <rect width="260" height="130" rx="10" fill="#FFF3E0" stroke="#F9A825" stroke-width="1.2"/>
+        <text x="14" y="22" font-size="11" font-weight="700" fill="#E68A00">● STANDBY · AD-2</text>
+        <g transform="translate(20,32)">
+          <ellipse cx="35" cy="14" rx="32" ry="10" fill="url(#ociBlue)" opacity="0.8"/>
+          <path d="M3,14 L3,70 Q3,80 35,80 Q67,80 67,70 L67,14" fill="url(#ociBlue)" opacity="0.8"/>
+          <ellipse cx="35" cy="14" rx="32" ry="10" fill="#4A90E2" opacity="0.85"/>
+          <ellipse cx="35" cy="34" rx="32" ry="10" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.6"/>
+          <ellipse cx="35" cy="54" rx="32" ry="10" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.6"/>
+        </g>
+        <text x="110" y="60" font-size="11" font-weight="600" fill="#1F2328">PostgreSQL 16 Replica</text>
+        <text x="110" y="78" font-size="10" fill="#5F6368">Synchronous Replication</text>
+        <text x="110" y="92" font-size="10" fill="#5F6368">Automatic Failover</text>
+        <text x="110" y="106" font-size="10" fill="#5F6368">Hot Standby</text>
+        <text x="110" y="122" font-size="10" font-style="italic" fill="#E68A00">Read-only (failover)</text>
+      </g>
+
+      <path d="M300,135 L400,135" stroke="#34A853" stroke-width="2.5" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="6 4"/>
+      <path d="M400,150 L300,150" stroke="#34A853" stroke-width="2.5" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="6 4"/>
+      <text x="350" y="128" text-anchor="middle" font-size="10" font-weight="600" fill="#34A853">Sync Replication</text>
+    </g>
+  </g>
+
+  <!-- ============ OCI OBJECT STORAGE (outside region group · right side) ============ -->
+  <g transform="translate(1475,460)" filter="url(#shadow)">
+    <rect width="120" height="340" rx="12" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1.5"/>
+    <g transform="translate(46,10)">
+      <path d="M5,8 L25,8 L28,30 Q28,34 25,34 L5,34 Q2,34 2,30 Z" fill="url(#ociRed)"/>
+      <rect x="2" y="8" width="26" height="6" fill="#A0271E"/>
+      <circle cx="9" cy="22" r="2" fill="#FFFFFF"/>
+      <circle cx="15" cy="22" r="2" fill="#FFFFFF"/>
+      <circle cx="21" cy="22" r="2" fill="#FFFFFF"/>
+    </g>
+    <text x="60" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#C74634">OCI Object Storage</text>
+    <text x="60" y="76" text-anchor="middle" font-size="9" fill="#5F6368">Multi-AD · Tokyo DR</text>
+
+    <g transform="translate(8,86)">
+      <rect width="104" height="74" rx="6" fill="#FFF3E0" stroke="#E68A00" stroke-width="1.2"/>
+      <text x="52" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#E68A00">queue-uploads</text>
+      <text x="52" y="29" text-anchor="middle" font-size="8" fill="#1F2328">private · presigned</text>
+      <text x="52" y="42" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">customer photos</text>
+      <text x="52" y="53" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">KYC docs</text>
+      <text x="52" y="64" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">admin uploads</text>
+    </g>
+
+    <g transform="translate(8,168)">
+      <rect width="104" height="74" rx="6" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.2"/>
+      <text x="52" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1976D2">public-media</text>
+      <text x="52" y="29" text-anchor="middle" font-size="8" fill="#1F2328">public · CDN</text>
+      <text x="52" y="42" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">ads videos</text>
+      <text x="52" y="53" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">banners</text>
+      <text x="52" y="64" text-anchor="middle" font-size="7" font-style="italic" fill="#C74634">← via OCI WAA</text>
+    </g>
+
+    <g transform="translate(8,250)">
+      <rect width="104" height="74" rx="6" fill="#FEE2E2" stroke="#EA4335" stroke-width="1.2"/>
+      <text x="52" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#EA4335">backups</text>
+      <text x="52" y="29" text-anchor="middle" font-size="8" fill="#1F2328">archive tier</text>
+      <text x="52" y="42" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">PG snapshots</text>
+      <text x="52" y="53" text-anchor="middle" font-size="8" font-style="italic" fill="#5F6368">WAL archives</text>
+      <text x="52" y="64" text-anchor="middle" font-size="7" font-style="italic" fill="#5F6368">→ Tokyo DR</text>
+    </g>
+  </g>
+
+  <!-- =========================================================== -->
+  <!-- CONNECTING ARROWS                                            -->
+  <!-- =========================================================== -->
+
+  <!-- Users -> OCI WAF -->
+  <path d="M200,270 L260,270" stroke="#5F6368" stroke-width="2.5" fill="none" marker-end="url(#arrowGray)"/>
+  <text x="230" y="262" text-anchor="middle" font-size="10" fill="#5F6368">HTTPS</text>
+
+  <!-- OCI WAF -> Load Balancer -->
+  <path d="M420,270 L480,270" stroke="#5F6368" stroke-width="2.5" fill="none" marker-end="url(#arrowGray)"/>
+  <text x="450" y="262" text-anchor="middle" font-size="10" fill="#5F6368">TLS</text>
+
+  <!-- Load Balancer -> OKE (straight) -->
+  <path d="M640,270 L720,270" stroke="#C74634" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="680" y="248" text-anchor="middle" font-size="10" font-weight="600" fill="#C74634">Public Traffic /*</text>
+  <text x="680" y="262" text-anchor="middle" font-size="9" fill="#5F6368">→ Gateway API Listener</text>
+
+  <!-- internal-api -> OCI Streaming (horizontal · adjusted for OKE moved up to y=200) -->
+  <path d="M1260,430 L1300,430" stroke="#231F20" stroke-width="2" fill="none" marker-end="url(#arrowGray)"/>
+  <text x="1280" y="424" text-anchor="middle" font-size="9" font-weight="600" fill="#231F20">events</text>
+
+  <!-- internal-api -> OCI Cache (L-shape · up to cache) -->
+  <path d="M1260,430 L1285,430 L1285,320 L1300,320" stroke="#E91E63" stroke-width="2" fill="none" marker-end="url(#arrowGray)" stroke-dasharray="4 3"/>
+  <text x="1295" y="314" text-anchor="middle" font-size="9" font-weight="600" fill="#E91E63">cache</text>
+
+  <!-- Zone B -> K8s Gateway API (logical Service routing · within OKE) -->
+  <path d="M1020,400 L1050,400" stroke="#1F5BA8" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="1035" y="392" text-anchor="middle" font-size="9" font-weight="600" fill="#1F5BA8">Service</text>
+
+  <!-- K8s Gateway API -> PostgreSQL (vertical · K8s Gateway API bottom y=520 → PG top y=610) -->
+  <path d="M1160,520 L1160,610" stroke="#1F5BA8" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="1170" y="570" font-size="10" font-weight="600" fill="#1F5BA8">Reads / Writes</text>
+
+  <!-- PostgreSQL -> backups -->
+  <path d="M1420,745 L1475,745" stroke="#EA4335" stroke-width="2" fill="none" marker-end="url(#arrowGray)" stroke-dasharray="6 4"/>
+  <text x="1430" y="735" font-size="10" font-weight="600" fill="#EA4335">Streaming WAL</text>
+  <text x="1430" y="772" font-size="10" font-weight="600" fill="#EA4335">+ Snapshots</text>
+
+  <!-- OCI WAA (CDN) -> public-media -->
+  <path d="M420,200 L420,100 L1465,100 L1465,665 L1475,665" stroke="#C74634" stroke-width="1.5" fill="none" marker-end="url(#arrowRed)" stroke-dasharray="4 3" opacity="0.85"/>
+  <text x="900" y="92" text-anchor="middle" font-size="10" font-weight="600" font-style="italic" fill="#C74634">CDN origin pull · cached at OCI WAA edge</text>
+
+  <!-- =========================================================== -->
+  <!-- BRANCH TIER                                                  -->
+  <!-- =========================================================== -->
+  <g transform="translate(40,890)">
+    <rect width="1520" height="220" rx="12" fill="#FFF7E6" stroke="#F9A825" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <g transform="translate(20,18)">
+      <rect width="280" height="28" rx="6" fill="#E68A00"/>
+      <text x="14" y="19" font-size="12" font-weight="700" fill="#FFFFFF">🏪 EDGE / BRANCH TIER — 228 AIS Shops</text>
+    </g>
+
+    <g transform="translate(40,60)">
+      <rect width="780" height="140" rx="10" fill="#FFFFFF" stroke="#E68A00" stroke-width="1.2"/>
+      <text x="20" y="22" font-size="11" font-weight="700" fill="#E68A00">AIS Branch (typical — ×228 locations)</text>
+
+      <!-- Counter PC (top-left) -->
+      <g transform="translate(20,38)">
+        <rect width="100" height="42" rx="6" fill="#FFFFFF" stroke="#1F5BA8" stroke-width="1.2"/>
+        <rect width="6" height="42" fill="#1F5BA8"/>
+        <g transform="translate(14,8)">
+          <rect width="22" height="16" rx="2" fill="#1F5BA8"/>
+          <rect x="2" y="2" width="18" height="11" rx="1" fill="#FFFFFF"/>
+          <rect x="5" y="18" width="12" height="3" rx="1" fill="#1F5BA8"/>
+        </g>
+        <text x="42" y="14" font-size="9" font-weight="700" fill="#1F5BA8">Counter PC</text>
+        <text x="42" y="26" font-size="8" fill="#1F2328">Windows 10/11</text>
+        <text x="42" y="37" font-size="7" font-style="italic" fill="#5F6368">Vue web app</text>
+      </g>
+
+      <!-- iPad (bottom-left) -->
+      <g transform="translate(20,86)">
+        <rect width="100" height="42" rx="6" fill="#FFFFFF" stroke="#9333EA" stroke-width="1.2"/>
+        <rect width="6" height="42" fill="#9333EA"/>
+        <g transform="translate(16,6)">
+          <rect width="20" height="30" rx="2" fill="#9333EA"/>
+          <rect x="2" y="2" width="16" height="22" rx="1" fill="#FFFFFF"/>
+          <circle cx="10" cy="27" r="1" fill="#FFFFFF"/>
+        </g>
+        <text x="42" y="14" font-size="9" font-weight="700" fill="#9333EA">iPad</text>
+        <text x="42" y="26" font-size="8" fill="#1F2328">iPadOS · Safari</text>
+        <text x="42" y="37" font-size="7" font-style="italic" fill="#5F6368">Vue web app</text>
+      </g>
+
+      <!-- IP Printer (middle column · spans full height · network-shared) -->
+      <g transform="translate(130,38)">
+        <rect width="100" height="90" rx="6" fill="#FFFFFF" stroke="#7B1FA2" stroke-width="1.2"/>
+        <rect width="6" height="90" fill="#7B1FA2"/>
+        <g transform="translate(28,10)">
+          <!-- Printer body -->
+          <rect width="40" height="28" rx="3" fill="#7B1FA2"/>
+          <rect x="3" y="3" width="34" height="14" rx="1" fill="#FFFFFF"/>
+          <rect x="6" y="20" width="28" height="5" fill="#FFFFFF"/>
+          <!-- Ethernet port indicator -->
+          <rect x="14" y="30" width="12" height="3" fill="#34A853"/>
+        </g>
+        <text x="50" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#7B1FA2">IP Printer</text>
+        <text x="50" y="68" text-anchor="middle" font-size="8" fill="#1F2328">Ethernet · LAN</text>
+        <text x="50" y="78" text-anchor="middle" font-size="7" fill="#5F6368">IPP / RAW 9100</text>
+        <text x="50" y="87" text-anchor="middle" font-size="7" font-style="italic" fill="#34A853">Shared resource</text>
+      </g>
+      <!-- Network arrows: PC + iPad → IP Printer (LAN) -->
+      <path d="M120,52 L130,52" stroke="#34A853" stroke-width="1.2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="2 2"/>
+      <path d="M120,100 L130,100" stroke="#34A853" stroke-width="1.2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="2 2"/>
+
+      <!-- Android Box (resized + moved right to avoid IP Printer overlap) -->
+      <g transform="translate(240,38)">
+        <rect width="150" height="92" rx="8" fill="#FFFFFF" stroke="#34A853" stroke-width="1.3"/>
+        <rect width="150" height="22" rx="8" fill="#34A853"/>
+        <rect y="16" width="150" height="6" fill="#34A853"/>
+        <text x="75" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Android Box</text>
+        <g transform="translate(58,30)">
+          <line x1="6" y1="0" x2="9" y2="6" stroke="#34A853" stroke-width="1.5"/>
+          <line x1="28" y1="0" x2="25" y2="6" stroke="#34A853" stroke-width="1.5"/>
+          <path d="M2,12 Q2,6 8,6 L26,6 Q32,6 32,12 L32,20 L2,20 Z" fill="#34A853"/>
+          <circle cx="10" cy="13" r="1.5" fill="#FFFFFF"/>
+          <circle cx="24" cy="13" r="1.5" fill="#FFFFFF"/>
+        </g>
+        <text x="75" y="70" text-anchor="middle" font-size="9" font-weight="600" fill="#1F2328">Android 14</text>
+        <text x="75" y="81" text-anchor="middle" font-size="8" fill="#5F6368">HDMI · USB Audio</text>
+        <text x="75" y="91" text-anchor="middle" font-size="7" font-style="italic" fill="#5F6368">Display + calling</text>
+      </g>
+
+      <!-- TV / Speaker -->
+      <g transform="translate(400,38)">
+        <rect width="170" height="42" rx="6" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1"/>
+        <rect width="6" height="42" fill="#1976D2"/>
+        <g transform="translate(14,7)">
+          <rect width="32" height="22" rx="2" fill="#1976D2"/>
+          <rect x="3" y="3" width="26" height="14" rx="1" fill="#FFFFFF"/>
+          <rect x="13" y="22" width="6" height="3" fill="#1976D2"/>
+        </g>
+        <text x="50" y="18" font-size="10" font-weight="700" fill="#1976D2">TV / Queue Display</text>
+        <text x="50" y="30" font-size="9" fill="#1F2328">HDMI · Chromium kiosk</text>
+        <text x="50" y="40" font-size="8" font-style="italic" fill="#5F6368">↑ from Android Box</text>
+      </g>
+
+      <g transform="translate(400,86)">
+        <rect width="170" height="42" rx="6" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1"/>
+        <rect width="6" height="42" fill="#EA4335"/>
+        <g transform="translate(14,7)">
+          <rect width="32" height="26" rx="2" fill="#EA4335"/>
+          <rect x="5" y="5" width="22" height="16" rx="1" fill="#FFFFFF"/>
+        </g>
+        <text x="50" y="18" font-size="10" font-weight="700" fill="#EA4335">Audio Amp + Speaker</text>
+        <text x="50" y="30" font-size="9" fill="#1F2328">USB · 3.5mm jack</text>
+        <text x="50" y="40" font-size="8" font-style="italic" fill="#5F6368">↑ from Android Box</text>
+      </g>
+
+      <!-- Branch resilience -->
+      <g transform="translate(590,38)">
+        <rect width="180" height="92" rx="8" fill="#F1F8E9" stroke="#34A853" stroke-width="1.2"/>
+        <text x="90" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#34A853">Branch Resilience</text>
+        <text x="14" y="36" font-size="9" fill="#1F2328">• Local SQLite cache</text>
+        <text x="14" y="50" font-size="9" fill="#1F2328">• HTTPS · no VPN</text>
+        <text x="14" y="64" font-size="9" fill="#1F2328">• MQTT heartbeat</text>
+        <text x="14" y="78" font-size="9" fill="#1F2328">• Offline queue issue</text>
+      </g>
+    </g>
+
+    <!-- Cloud Connection note -->
+    <g transform="translate(840,60)">
+      <rect width="280" height="140" rx="10" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#C74634">Cloud Connection</text>
+      <text x="14" y="40" font-size="10" fill="#1F2328">↑ HTTPS · TLS 1.2+</text>
+      <text x="14" y="54" font-size="10" fill="#1F2328">↑ WebSocket (queue events)</text>
+      <text x="14" y="68" font-size="10" fill="#1F2328">↑ MQTT (peripheral telemetry)</text>
+      <text x="14" y="82" font-size="9" font-style="italic" fill="#34A853">No VPN required — OCI WAF protects edge</text>
+      <text x="14" y="100" font-size="9" fill="#5F6368">Branch-managed:</text>
+      <text x="14" y="114" font-size="9" fill="#5F6368">  - AIS LAN / WAN</text>
+      <text x="14" y="128" font-size="9" fill="#5F6368">  - 4G/5G failover (optional)</text>
+    </g>
+
+    <!-- Branch arrow -->
+    <g transform="translate(1140,60)">
+      <rect width="340" height="140" rx="10" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#C74634">Fleet Operations</text>
+      <text x="14" y="40" font-size="10" fill="#1F2328">⊕ Provisioning · Counter PC: Microsoft Intune</text>
+      <text x="14" y="54" font-size="10" fill="#1F2328">⊕ OTA Updates · Android: EMM (signed APK)</text>
+      <text x="14" y="68" font-size="10" fill="#1F2328">⊕ Monitoring: VPN / heartbeat</text>
+      <text x="14" y="86" font-size="10" font-weight="600" fill="#5F6368">Security model:</text>
+      <text x="14" y="100" font-size="9" fill="#5F6368">• Device cert / mTLS</text>
+      <text x="14" y="112" font-size="9" fill="#5F6368">• Per-shop API token (rotated daily)</text>
+      <text x="14" y="126" font-size="9" fill="#5F6368">Fleet logical entities: AIS Region · ACL Group · Pod</text>
+    </g>
+
+    <!-- Branch -> Cloud arrow -->
+    <path d="M390,200 L390,220 L60,220 L60,290" stroke="#34A853" stroke-width="2.5" fill="none" marker-end="url(#arrowGreen)"/>
+    <text x="350" y="624" font-size="10" font-weight="600" fill="#34A853">to OCI WAF</text>
+    <text x="350" y="638" font-size="9" font-style="italic" fill="#34A853">via HTTPS (no VPN)</text>
+  </g>
+
+  <!-- =========================================================== -->
+  <!-- AIS INTEGRATION TIER                                         -->
+  <!-- =========================================================== -->
+  <g transform="translate(40,1130)">
+    <rect width="1520" height="240" rx="12" fill="#F3E8FF" stroke="#7B1FA2" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <g transform="translate(20,18)">
+      <rect width="320" height="28" rx="6" fill="#7B1FA2"/>
+      <text x="14" y="19" font-size="12" font-weight="700" fill="#FFFFFF">🏢 AIS INTERNAL SYSTEMS — Integration Tier</text>
+    </g>
+    <text x="1500" y="36" text-anchor="end" font-size="11" fill="#5F6368">via API Integration Layer (Kafka + REST)</text>
+
+    <g transform="translate(40,62)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#1F5BA8" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#1F5BA8"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#1F5BA8">Identity (SSO)</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Entra ID · SailPoint</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">OIDC / SAML 2.0</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">← Staff SSO · Customer login</text>
+    </g>
+
+    <g transform="translate(285,62)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#E68A00" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#E68A00"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#E68A00">CRM</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Customer Profile · History</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">REST + Kafka events</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">↔ Profile lookup · Visit push</text>
+    </g>
+
+    <g transform="translate(530,62)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#7B1FA2" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#7B1FA2"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#7B1FA2">Billing / Charging</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Plan · Balance · Invoice</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">REST API</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">→ Plan lookup during session</text>
+    </g>
+
+    <g transform="translate(775,62)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#34A853" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#34A853"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#34A853">Notification</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">SMS · Push · Email</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">REST + Kafka events</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">→ "Queue is next" alerts</text>
+    </g>
+
+    <g transform="translate(1020,62)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#1976D2" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#1976D2"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#1976D2">Reporting / BI</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Power BI · DataStudio</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">ODI · JDBC</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">→ Daily analytics</text>
+    </g>
+
+    <g transform="translate(1265,62)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#EA4335" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#EA4335"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#EA4335">ITSM</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">ServiceNow</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">REST API</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">→ Auto-ticket on faults</text>
+    </g>
+
+    <g transform="translate(40,150)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#5F6368" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#5F6368"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#5F6368">Asset Management</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Branch hardware inventory</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">REST API</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">→ Edge fleet registry</text>
+    </g>
+
+    <g transform="translate(285,150)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#F9A825" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#F9A825"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#F9A825">Loyalty / Promo</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Points · Campaigns</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">REST + Kafka</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">↔ Promo eligibility check</text>
+    </g>
+
+    <g transform="translate(530,150)">
+      <rect width="220" height="70" rx="10" fill="#FFFFFF" stroke="#231F20" stroke-width="1.2"/>
+      <rect width="6" height="70" rx="2" fill="#231F20"/>
+      <text x="20" y="22" font-size="12" font-weight="700" fill="#231F20">Data Replication</text>
+      <text x="20" y="38" font-size="10" fill="#1F2328">Oracle Data Integrator</text>
+      <text x="20" y="52" font-size="10" fill="#5F6368">Scheduled ETL</text>
+      <text x="20" y="64" font-size="9" font-style="italic" fill="#5F6368">→ Data warehouse sync</text>
+    </g>
+
+    <g transform="translate(800,150)">
+      <rect width="685" height="70" rx="10" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#C74634">Integration Pattern</text>
+      <text x="14" y="38" font-size="10" fill="#1F2328">• Anti-corruption layer in API Pod — isolates queue core from AIS system changes</text>
+      <text x="14" y="52" font-size="10" fill="#1F2328">• Sync: REST/JSON via HTTPS · Async: OCI Streaming topics (queue.events, integration.events)</text>
+      <text x="14" y="66" font-size="10" fill="#1F2328">• Authentication: mTLS (system-to-system) · OAuth2 (delegated user actions)</text>
+    </g>
+  </g>
+
+  <!-- AIS Integration -> internal-api (adjusted · internal-api now at y=430 after OKE moved up) -->
+  <path d="M1540,1130 L1540,850 L1465,850 L1465,260 L1280,260 L1280,430 L1260,430" stroke="#7B1FA2" stroke-width="2" fill="none" marker-end="url(#arrowGray)" stroke-dasharray="4 3"/>
+  <text x="1475" y="860" font-size="10" font-weight="700" fill="#7B1FA2">↑ via Internal API</text>
+  <text x="1475" y="874" font-size="9" font-style="italic" fill="#7B1FA2">(REST + Streaming)</text>
+
+  <!-- =========================================================== -->
+  <!-- LEGEND                                                       -->
+  <!-- =========================================================== -->
+  <g transform="translate(40,1390)">
+    <rect width="1520" height="90" rx="10" fill="#FFFFFF" stroke="#D0D7DE" stroke-width="1"/>
+    <text x="20" y="24" font-size="13" font-weight="700" fill="#C74634">Legend</text>
+
+    <line x1="20" y1="48" x2="60" y2="48" stroke="#5F6368" stroke-width="2.5" marker-end="url(#arrowGray)"/>
+    <text x="70" y="52" font-size="11" fill="#1F2328">Public Internet Traffic</text>
+
+    <line x1="220" y1="48" x2="260" y2="48" stroke="#1F5BA8" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+    <text x="270" y="52" font-size="11" fill="#1F2328">Internal VCN Traffic</text>
+
+    <line x1="420" y1="48" x2="460" y2="48" stroke="#34A853" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arrowGreen)"/>
+    <text x="470" y="52" font-size="11" fill="#1F2328">Synchronous DB Replication</text>
+
+    <line x1="660" y1="48" x2="700" y2="48" stroke="#EA4335" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+    <text x="710" y="52" font-size="11" fill="#1F2328">Backup / Log Streaming</text>
+
+    <line x1="900" y1="48" x2="940" y2="48" stroke="#E91E63" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrowGray)"/>
+    <text x="950" y="52" font-size="11" fill="#1F2328">Cache Access (Valkey)</text>
+
+    <rect x="1140" y="40" width="16" height="16" rx="3" fill="#F1F8E9" stroke="#34A853" stroke-width="1.2"/>
+    <text x="1162" y="52" font-size="11" fill="#1F2328">AD-1</text>
+
+    <rect x="1240" y="40" width="16" height="16" rx="3" fill="#FFF3E0" stroke="#F9A825" stroke-width="1.2"/>
+    <text x="1262" y="52" font-size="11" fill="#1F2328">AD-2</text>
+
+    <rect x="1320" y="40" width="16" height="16" rx="3" fill="#FEF5F4" stroke="#C74634" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="1342" y="52" font-size="11" fill="#1F2328">OCI Tenancy: AIS-MMT · Singapore</text>
+
+    <text x="20" y="78" font-size="10" fill="#5F6368">Cloud: OCI WAF · OCI Load Balancer · OKE (Oracle Linux 8) · OCI Cache (Valkey 8.1) · OCI Database PostgreSQL 16 · OCI Streaming · OCI Object Storage · K8s Gateway API · Integration: REST + Kafka via API Layer</text>
+  </g>
+
+</svg>

@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Node (if you add wrangler dev deps)
+node_modules/
+package-lock.json
+.wrangler/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Cloudflare cache (managed by Cloudflare, don't commit)
+.dev.vars

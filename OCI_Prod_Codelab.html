@@ -1,0 +1,1400 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="color-scheme" content="light only"/>
+<title>OCI Prod Setup Codelab — AIS MMT-RFP</title>
+
+<style>
+  :root {
+    color-scheme: light only;
+    forced-color-adjust: none;
+    --bg: #fafbfc;
+    --panel: #ffffff;
+    --panel-2: #f4f6f8;
+    --border: #e0e4e9;
+    --border-strong: #c8cfd6;
+    --text: #1a1f29;
+    --text-2: #4a5260;
+    --muted: #7a8595;
+    --accent: #C74634;
+    --accent-dark: #A0271E;
+    --oracle-red: #F80000;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0078d4;
+    --code-bg: #1e293b;
+  }
+  * { box-sizing: border-box; forced-color-adjust: none; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #fafbfc !important;
+    color: #1a1f29 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  header { position: sticky; top: 0; z-index: 100; background: #ffffff !important; border-bottom: 1px solid #e0e4e9; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .header-inner { max-width: 1380px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+  .brand-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #C74634 0%, #A0271E 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; flex-shrink: 0; }
+  .brand-text { font-weight: 700; font-size: 16px; }
+  .brand-sub { font-size: 11.5px; color: #7a8595; margin-top: 1px; }
+  .prod-badge { background: #16a34a; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 12px; letter-spacing: 0.5px; }
+  .header-progress { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: #7a8595; }
+  .progress-bar { width: 220px; height: 6px; background: #f4f6f8; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #C74634, #16a34a); transition: width 0.3s; width: 0%; }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; max-width: 1380px; margin: 0 auto; min-height: calc(100vh - 60px); }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } aside { display: none; } }
+
+  aside { background: #ffffff !important; border-right: 1px solid #e0e4e9; padding: 20px 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; }
+  .nav-section { font-size: 11px; color: #7a8595 !important; font-weight: 700; letter-spacing: 0.5px; padding: 14px 24px 8px; }
+  .nav-step { display: flex; align-items: center; gap: 10px; padding: 10px 24px; cursor: pointer; font-size: 13.5px; border-left: 3px solid transparent; background: #ffffff !important; color: #1a1f29 !important; transition: background 0.12s; user-select: none; }
+  .nav-step:hover { background: #f4f6f8 !important; }
+  .nav-step.active { background: #fef5f4 !important; border-left-color: #C74634; color: #C74634 !important; font-weight: 600; }
+  .nav-step.done .step-num { background: #16a34a !important; color: #ffffff !important; border-color: #16a34a; }
+  .nav-step.done .step-num::before { content: "✓"; }
+  .nav-step.done .step-num span { display: none; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #c8cfd6; background: #ffffff !important; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #7a8595; flex-shrink: 0; }
+  .nav-step.active .step-num { background: #C74634 !important; color: #ffffff !important; border-color: #C74634; }
+
+  main { padding: 32px 48px 80px; max-width: 980px; background: #fafbfc !important; }
+  @media (max-width: 1100px) { main { padding: 28px 28px 60px; } }
+
+  .step-page { display: none; }
+  .step-page.active { display: block; }
+
+  .step-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; font-size: 12.5px; color: #7a8595; flex-wrap: wrap; }
+  .meta-chip { padding: 4px 10px; background: #f4f6f8 !important; color: #4a5260 !important; border: 1px solid #e0e4e9; border-radius: 4px; display: inline-block; }
+  .meta-chip.time { color: #C74634 !important; }
+  .meta-chip.oci { color: #C74634 !important; background: #fef5f4 !important; }
+  .meta-chip.prod { color: #16a34a !important; background: #dcfce7 !important; border-color: #86efac; }
+
+  h1 { font-size: 30px; margin: 0 0 10px; font-weight: 700; line-height: 1.3; color: #1a1f29 !important; }
+  h2 { font-size: 21px; margin: 36px 0 12px; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid #e0e4e9; color: #1a1f29 !important; }
+  h3 { font-size: 16px; margin: 24px 0 10px; color: #A0271E !important; font-weight: 600; }
+  h4 { font-size: 14px; margin: 18px 0 8px; color: #1a1f29 !important; font-weight: 600; }
+  p { margin: 10px 0 14px; color: #4a5260 !important; }
+  ul, ol { padding-left: 24px; color: #4a5260 !important; margin: 10px 0; }
+  li { margin: 6px 0; }
+  .lead { font-size: 16.5px; color: #4a5260 !important; margin: 8px 0 28px; line-height: 1.7; }
+
+  .goal { background: linear-gradient(135deg, rgba(199,70,52,0.06), rgba(22,163,74,0.04)); border: 1px solid rgba(199,70,52,0.2); border-radius: 10px; padding: 16px 20px; margin: 20px 0 28px; }
+  .goal-label { font-size: 11.5px; font-weight: 700; color: #C74634; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .goal-text { font-size: 14.5px; color: #1a1f29; line-height: 1.6; }
+
+  .note { background: rgba(0,120,212,0.05); border-left: 4px solid #0078d4; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .note-label { font-size: 12px; font-weight: 700; color: #0078d4; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .note-label::before { content: "📘 NOTE: "; }
+  .note p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .notice { background: rgba(217,119,6,0.06); border-left: 4px solid #d97706; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .notice-label { font-size: 12px; font-weight: 700; color: #d97706; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .notice-label::before { content: "⚠️ NOTICE: "; }
+  .notice p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .technique { background: rgba(22,163,74,0.06); border-left: 4px solid #16a34a; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .technique-label { font-size: 12px; font-weight: 700; color: #16a34a; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .technique-label::before { content: "💡 TECHNIQUE: "; }
+  .technique p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .prod-warning { background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.3); border-left: 4px solid #dc2626; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .prod-warning-label { font-size: 12px; font-weight: 700; color: #dc2626; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .prod-warning-label::before { content: "🛑 PROD WARNING: "; }
+  .prod-warning p { color: #1a1f29 !important; margin: 6px 0; }
+
+  .danger-box { background: rgba(220,38,38,0.06); border-left: 4px solid #dc2626; padding: 14px 18px; margin: 16px 0; border-radius: 4px; }
+  .danger-box::before { content: "🚨 DANGER · "; font-weight: 700; color: #dc2626; }
+
+  pre {
+    background: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-radius: 8px;
+    padding: 16px 18px !important;
+    margin: 14px 0 !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    overflow-x: auto;
+    position: relative;
+    white-space: pre !important;
+    font-family: "SF Mono", Menlo, Consolas, monospace !important;
+  }
+  code.inline, p code, li code, td code, th code {
+    background: #f1f5f9 !important;
+    color: #be185d !important;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+  .code-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: inherit; transition: background 0.15s; z-index: 2; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  .copy-btn.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+  .cmd-label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a8595; margin: 18px 0 6px; font-weight: 600; }
+  .cmd-label .icon { width: 18px; height: 18px; background: #C74634; color: #fff; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; background: #ffffff !important; border: 1px solid #e0e4e9; border-radius: 8px; overflow: hidden; font-size: 13.5px; }
+  th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid #e0e4e9; background: transparent !important; color: #1a1f29 !important; vertical-align: top; }
+  th { background: #f4f6f8 !important; color: #1a1f29 !important; font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+
+  .checklist { background: #ffffff !important; border: 1px solid #e0e4e9; border-radius: 8px; padding: 14px 18px; margin: 18px 0; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 7px 0; font-size: 14px; color: #1a1f29; }
+  .checklist-item input[type=checkbox] { margin-top: 5px; cursor: pointer; flex-shrink: 0; }
+  .checklist-item label { cursor: pointer; line-height: 1.5; }
+
+  .step-nav { display: flex; gap: 12px; margin: 44px 0 0; padding-top: 24px; border-top: 1px solid #e0e4e9; flex-wrap: wrap; }
+  .btn { padding: 10px 20px; background: #C74634; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13.5px; font-family: inherit; transition: background 0.15s; }
+  .btn:hover { background: #A0271E; }
+  .btn.secondary { background: #ffffff; color: #1a1f29; border: 1px solid #c8cfd6; }
+  .btn.secondary:hover { background: #f4f6f8; }
+  .btn-next { margin-left: auto; }
+  .complete-btn { background: #16a34a; }
+  .complete-btn:hover { background: #15803d; }
+
+  .verify { background: rgba(22,163,74,0.05); border: 1px dashed #16a34a; border-radius: 8px; padding: 16px 18px; margin: 18px 0; }
+  .verify-label { font-size: 11.5px; font-weight: 700; color: #16a34a; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .verify pre { margin: 0 !important; }
+  .verify p { margin: 8px 0 0; font-size: 13.5px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 18px 0; }
+  .stat { background: #ffffff !important; border: 1px solid #e0e4e9; border-radius: 8px; padding: 14px 16px; }
+  .stat-label { font-size: 11.5px; color: #7a8595; font-weight: 600; }
+  .stat-value { font-size: 22px; font-weight: 700; color: #C74634; margin-top: 4px; line-height: 1.2; }
+  .stat-sub { font-size: 11.5px; color: #7a8595; margin-top: 4px; line-height: 1.4; }
+
+  .arch-tile { background: linear-gradient(135deg, #C74634 0%, #A0271E 100%); color: #fff; padding: 32px 36px; border-radius: 14px; margin: 12px 0 28px; }
+  .arch-tile h2 { color: #fff; margin: 0 0 10px; border: none; padding: 0; font-size: 22px; }
+  .arch-tile p { color: rgba(255,255,255,0.94); margin: 0; line-height: 1.65; }
+
+  /* Architecture Progress Diagram */
+  .arch-progress {
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    border: 1px solid #e0e4e9;
+    border-radius: 12px;
+    padding: 14px 18px 10px;
+    margin: 0 0 24px;
+  }
+  .arch-progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #7a8595; }
+  .arch-progress-header strong { color: #1a1f29; font-size: 13px; }
+  .arch-progress-legend { display: flex; gap: 16px; align-items: center; }
+  .arch-progress-legend .item { display: flex; align-items: center; gap: 6px; }
+  .arch-progress-legend .swatch { width: 12px; height: 12px; border-radius: 2px; }
+  .arch-progress-legend .swatch.todo { background: #d1d5db; }
+  .arch-progress-legend .swatch.done { background: #C74634; }
+  .arch-progress svg { display: block; max-width: 100%; height: auto; }
+
+  .arch-comp rect.fill, .arch-comp circle.fill, .arch-comp path.fill {
+    fill: #d1d5db; stroke: #9ca3af; transition: fill 0.4s, stroke 0.4s;
+  }
+  .arch-comp rect.stroke-only { fill: none; stroke: #9ca3af; transition: stroke 0.4s; }
+  .arch-comp text { fill: #6b7280; transition: fill 0.4s; }
+  .arch-line { stroke: #d1d5db; transition: stroke 0.4s, opacity 0.4s; opacity: 0.5; }
+
+  .arch-comp.done rect.fill, .arch-comp.done circle.fill, .arch-comp.done path.fill {
+    fill: var(--c, #4A90E2); stroke: var(--s, #1F5BA8);
+  }
+  .arch-comp.done rect.stroke-only { stroke: var(--s, #C74634); }
+  .arch-comp.done text { fill: var(--t, #ffffff); }
+  .arch-comp.done text.label { fill: var(--t-label, #1a1f29); }
+  .arch-line.active { stroke: var(--c, #5F6368); opacity: 1; }
+
+  .arch-comp.just-done rect.fill, .arch-comp.just-done rect.stroke-only, .arch-comp.just-done circle.fill {
+    animation: pulse-glow 1.5s ease-out;
+  }
+  @keyframes pulse-glow {
+    0% { filter: drop-shadow(0 0 0 rgba(22,163,74,0)); }
+    50% { filter: drop-shadow(0 0 8px rgba(22,163,74,0.7)); }
+    100% { filter: drop-shadow(0 0 0 rgba(22,163,74,0)); }
+  }
+
+  .prod-vs-nonprod { background: #fef5f4; border: 1px solid rgba(199,70,52,0.2); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13.5px; }
+  .prod-vs-nonprod strong { color: #C74634; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand-logo">🔥</div>
+    <div>
+      <div class="brand-text">OCI Prod Setup Codelab <span class="prod-badge">PRODUCTION</span></div>
+      <div class="brand-sub">AIS MMT-RFP · Multi-AD HA · Production grade · ~3-4 hours</div>
+    </div>
+    <div class="header-progress">
+      <span id="progress-label">0 / 12 ขั้น</span>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside>
+    <div class="nav-section">เริ่มต้น</div>
+    <div class="nav-step active" data-step="0"><span class="step-num"><span>0</span></span> Welcome & Architecture</div>
+    <div class="nav-step" data-step="1"><span class="step-num"><span>1</span></span> Prerequisites</div>
+    <div class="nav-step" data-step="2"><span class="step-num"><span>2</span></span> Compartment + VCN (2 AD)</div>
+
+    <div class="nav-section">Edge & Network</div>
+    <div class="nav-step" data-step="3"><span class="step-num"><span>3</span></span> OCI WAF + LB (Flexible)</div>
+    <div class="nav-step" data-step="4"><span class="step-num"><span>4</span></span> OKE Cluster (Multi-AD HA)</div>
+    <div class="nav-step" data-step="5"><span class="step-num"><span>5</span></span> K8s Gateway API</div>
+
+    <div class="nav-section">Data Services (HA)</div>
+    <div class="nav-step" data-step="6"><span class="step-num"><span>6</span></span> OCI Database PG (HA pair)</div>
+    <div class="nav-step" data-step="7"><span class="step-num"><span>7</span></span> OCI Cache (Primary+Replica)</div>
+    <div class="nav-step" data-step="8"><span class="step-num"><span>8</span></span> OCI Streaming (Multi-AD)</div>
+    <div class="nav-step" data-step="9"><span class="step-num"><span>9</span></span> Object Storage (RA-GZRS)</div>
+
+    <div class="nav-section">Deploy & Validate</div>
+    <div class="nav-step" data-step="10"><span class="step-num"><span>10</span></span> Deploy Workload</div>
+    <div class="nav-step" data-step="11"><span class="step-num"><span>11</span></span> Failover Test + Cost Alert</div>
+  </aside>
+
+
+  <main>
+
+    <!-- Architecture Progress Diagram -->
+    <div class="arch-progress" id="archProgress">
+      <div class="arch-progress-header">
+        <strong>📊 Architecture Progress (Prod · 2 AD HA)</strong>
+        <div class="arch-progress-legend">
+          <div class="item"><span class="swatch todo"></span> รอ build</div>
+          <div class="item"><span class="swatch done"></span> เสร็จแล้ว</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="archArrowProd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/>
+          </marker>
+        </defs>
+
+        <!-- User -->
+        <g>
+          <rect x="20" y="195" width="80" height="60" rx="8" fill="#8E7CC3" stroke="#6A4FBE"/>
+          <text x="60" y="225" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">User</text>
+          <text x="60" y="241" text-anchor="middle" fill="#fff" font-size="8">228 shops</text>
+        </g>
+
+        <!-- Arrows -->
+        <line class="arch-line" id="arr-user-waf" x1="100" y1="225" x2="155" y2="225" stroke-width="2" marker-end="url(#archArrowProd)"/>
+        <line class="arch-line" id="arr-waf-lb" x1="255" y1="225" x2="265" y2="225" stroke-width="2" marker-end="url(#archArrowProd)"/>
+        <line class="arch-line" id="arr-lb-oke" x1="365" y1="225" x2="375" y2="225" stroke-width="2" marker-end="url(#archArrowProd)"/>
+        <line class="arch-line" id="arr-oke-cache" x1="620" y1="160" x2="635" y2="160" stroke-width="1.5" marker-end="url(#archArrowProd)"/>
+        <line class="arch-line" id="arr-oke-stream" x1="620" y1="245" x2="635" y2="245" stroke-width="1.5" marker-end="url(#archArrowProd)"/>
+        <line class="arch-line" id="arr-oke-db" x1="500" y1="335" x2="500" y2="365" stroke-width="2" marker-end="url(#archArrowProd)"/>
+        <line class="arch-line" id="arr-db-storage" x1="460" y1="395" x2="635" y2="305" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#archArrowProd)"/>
+
+        <!-- OCI Tenancy frame -->
+        <g class="arch-comp" data-id="tenancy" style="--s: #C74634;">
+          <rect class="stroke-only" x="125" y="20" width="765" height="450" rx="14" stroke-width="2" stroke-dasharray="10 6"/>
+          <text class="label" x="140" y="40" font-size="10" font-weight="700">OCI Tenancy · Compartment: prod · Region: ap-singapore-1 (3 ADs)</text>
+        </g>
+
+        <!-- VCN frame -->
+        <g class="arch-comp" data-id="vcn" style="--s: #5F6368;">
+          <rect class="stroke-only" x="140" y="55" width="735" height="405" rx="10" stroke-width="1.2" stroke-dasharray="6 4"/>
+          <text class="label" x="155" y="72" font-size="9" font-weight="600">VCN 10.20.0.0/16 · 4 subnets (Multi-AD)</text>
+        </g>
+
+        <!-- WAF -->
+        <g class="arch-comp" data-id="waf" style="--c: #C74634; --s: #A0271E; --t: #ffffff;">
+          <rect class="fill" x="155" y="195" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="205" y="215" text-anchor="middle" font-size="10" font-weight="700">OCI WAF</text>
+          <text x="205" y="229" text-anchor="middle" font-size="8">Prevention</text>
+          <text x="205" y="241" text-anchor="middle" font-size="8">+ Bot Mgmt</text>
+        </g>
+
+        <!-- Load Balancer -->
+        <g class="arch-comp" data-id="lb" style="--c: #1F5BA8; --s: #0E3F7C; --t: #ffffff;">
+          <rect class="fill" x="265" y="195" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="315" y="215" text-anchor="middle" font-size="10" font-weight="700">LB Flexible</text>
+          <text x="315" y="229" text-anchor="middle" font-size="8">10-8000 Mbps</text>
+          <text x="315" y="241" text-anchor="middle" font-size="8">auto-scale</text>
+        </g>
+
+        <!-- OKE Cluster (Multi-AD) -->
+        <g class="arch-comp" data-id="oke" style="--c: #FEF5F4; --s: #C74634; --t-label: #C74634;">
+          <rect class="stroke-only" x="375" y="125" width="245" height="210" rx="8" stroke-width="1.5"/>
+          <rect class="fill" x="375" y="125" width="245" height="24" rx="8" stroke-width="1.5"/>
+          <text x="497" y="142" text-anchor="middle" font-size="10" font-weight="700">OKE Cluster (Multi-AD · HA)</text>
+        </g>
+
+        <!-- AD-1 Worker -->
+        <g class="arch-comp" data-id="oke-ad1" style="--c: #F1F8E9; --s: #34A853; --t-label: #34A853;">
+          <rect class="fill" x="390" y="160" width="100" height="160" rx="6" stroke-width="1.2"/>
+          <text class="label" x="440" y="180" text-anchor="middle" font-size="9" font-weight="700">AD-1 Worker</text>
+          <text class="label" x="440" y="194" text-anchor="middle" font-size="7" fill="#1F2328">2 OCPU/16 GB</text>
+        </g>
+
+        <!-- AD-2 Worker -->
+        <g class="arch-comp" data-id="oke-ad2" style="--c: #FFF3E0; --s: #F9A825; --t-label: #E68A00;">
+          <rect class="fill" x="390" y="245" width="100" height="75" rx="6" stroke-width="1.2"/>
+          <text class="label" x="440" y="265" text-anchor="middle" font-size="9" font-weight="700">AD-2 Worker</text>
+          <text class="label" x="440" y="278" text-anchor="middle" font-size="7" fill="#1F2328">2 OCPU/16 GB</text>
+        </g>
+
+        <!-- Gateway API -->
+        <g class="arch-comp" data-id="gateway-api" style="--c: #FFF5F5; --s: #C74634; --t-label: #C74634;">
+          <rect class="fill" x="500" y="160" width="110" height="75" rx="6" stroke-width="1.2"/>
+          <text class="label" x="555" y="180" text-anchor="middle" font-size="9" font-weight="700">Gateway API</text>
+          <text class="label" x="555" y="194" text-anchor="middle" font-size="7" fill="#5F6368">HTTPRoute · TLS</text>
+        </g>
+
+        <!-- Pods -->
+        <g class="arch-comp" data-id="pods" style="--c: #E0F2F1; --s: #00897B; --t-label: #00897B;">
+          <rect class="fill" x="500" y="245" width="110" height="75" rx="6" stroke-width="1.2"/>
+          <text class="label" x="555" y="265" text-anchor="middle" font-size="9" font-weight="700">Pods</text>
+          <text class="label" x="555" y="278" text-anchor="middle" font-size="7" fill="#1F2328">FE · BE · API</text>
+          <text class="label" x="555" y="290" text-anchor="middle" font-size="7" fill="#5F6368">HPA 3-50</text>
+        </g>
+
+        <!-- Cache (HA · Primary + Replica) -->
+        <g class="arch-comp" data-id="cache-primary" style="--c: #E91E63; --s: #AD1457; --t: #ffffff;">
+          <rect class="fill" x="635" y="130" width="100" height="40" rx="6" stroke-width="1.2"/>
+          <text x="685" y="148" text-anchor="middle" font-size="9" font-weight="700">Cache Primary</text>
+          <text x="685" y="161" text-anchor="middle" font-size="7">AD-1 · 2 vCPU/8GB</text>
+        </g>
+        <g class="arch-comp" data-id="cache-replica" style="--c: #F48FB1; --s: #AD1457; --t: #ffffff;">
+          <rect class="fill" x="635" y="175" width="100" height="35" rx="6" stroke-width="1.2"/>
+          <text x="685" y="190" text-anchor="middle" font-size="9" font-weight="700">Cache Replica</text>
+          <text x="685" y="202" text-anchor="middle" font-size="7">AD-2 · Sync</text>
+        </g>
+
+        <!-- Streaming (multi-AD) -->
+        <g class="arch-comp" data-id="streaming" style="--c: #231F20; --s: #000000; --t: #ffffff;">
+          <rect class="fill" x="635" y="220" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="685" y="240" text-anchor="middle" font-size="10" font-weight="700">Streaming</text>
+          <text x="685" y="254" text-anchor="middle" font-size="8">Multi-AD</text>
+          <text x="685" y="266" text-anchor="middle" font-size="7">4 partitions · 7d</text>
+        </g>
+
+        <!-- Object Storage (RA-GZRS) -->
+        <g class="arch-comp" data-id="object-storage" style="--c: #F80000; --s: #A0271E; --t: #ffffff;">
+          <rect class="fill" x="635" y="290" width="100" height="60" rx="6" stroke-width="1.2"/>
+          <text x="685" y="310" text-anchor="middle" font-size="10" font-weight="700">Object Stor</text>
+          <text x="685" y="324" text-anchor="middle" font-size="8">RA-GZRS</text>
+          <text x="685" y="337" text-anchor="middle" font-size="7">+ Tokyo DR</text>
+        </g>
+
+        <!-- Vault -->
+        <g class="arch-comp" data-id="vault" style="--c: #9333EA; --s: #6B21A8; --t: #ffffff;">
+          <rect class="fill" x="745" y="290" width="105" height="60" rx="6" stroke-width="1.2"/>
+          <text x="797" y="310" text-anchor="middle" font-size="10" font-weight="700">Vault</text>
+          <text x="797" y="324" text-anchor="middle" font-size="8">Virtual Private</text>
+          <text x="797" y="337" text-anchor="middle" font-size="7">+ HSM-backed</text>
+        </g>
+
+        <!-- PostgreSQL HA (Primary + Standby) -->
+        <g class="arch-comp" data-id="db-primary" style="--c: #1F5BA8; --s: #0E3F7C; --t: #ffffff;">
+          <rect class="fill" x="155" y="365" width="150" height="70" rx="8" stroke-width="1.2"/>
+          <text x="230" y="385" text-anchor="middle" font-size="10" font-weight="700">PG Primary</text>
+          <text x="230" y="398" text-anchor="middle" font-size="8">AD-1 · 4 OCPU/16GB</text>
+          <text x="230" y="412" text-anchor="middle" font-size="7">Read/Write</text>
+          <text x="230" y="425" text-anchor="middle" font-size="7">256 GB · sync</text>
+        </g>
+        <g class="arch-comp" data-id="db-standby" style="--c: #F9A825; --s: #E68A00; --t: #ffffff;">
+          <rect class="fill" x="315" y="365" width="150" height="70" rx="8" stroke-width="1.2"/>
+          <text x="390" y="385" text-anchor="middle" font-size="10" font-weight="700">PG Standby</text>
+          <text x="390" y="398" text-anchor="middle" font-size="8">AD-2 · Sync</text>
+          <text x="390" y="412" text-anchor="middle" font-size="7">Hot Standby</text>
+          <text x="390" y="425" text-anchor="middle" font-size="7">Auto-failover</text>
+        </g>
+      </svg>
+    </div>
+
+
+    <!-- STEP 0 -->
+    <section class="step-page active" data-step="0">
+      <div class="arch-tile">
+        <h2>OCI Prod Environment Setup · Multi-AD HA</h2>
+        <p>Build <strong>Production-grade</strong> deployment ของระบบ AIS MMT-RFP บน OCI · เน้น <strong>Multi-AD HA</strong> + <strong>Auto-failover</strong> + <strong>99.95% SLA composite</strong> · พร้อมรับ traffic จริงจาก 228 สาขา · 975 counters · 700K queues/month</p>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">จำนวนขั้น</div><div class="stat-value">12</div><div class="stat-sub">รวม failover test</div></div>
+        <div class="stat"><div class="stat-label">เวลาประมาณ</div><div class="stat-value">3-4 ชม.</div><div class="stat-sub">ครั้งแรก</div></div>
+        <div class="stat"><div class="stat-label">ค่าใช้จ่าย</div><div class="stat-value">~$1.10/ชม.</div><div class="stat-sub">ตอนรัน · ~$790/mo</div></div>
+        <div class="stat"><div class="stat-label">SLA Target</div><div class="stat-value">99.95%</div><div class="stat-sub">composite stack</div></div>
+      </div>
+
+      <h2>Prod vs Non-Prod Specs</h2>
+
+      <table>
+        <thead><tr><th>Component</th><th>Prod Spec (ที่จะ build)</th><th>Non-Prod Spec (comparison)</th></tr></thead>
+        <tbody>
+          <tr><td>AD Topology</td><td><strong>Multi-AD (2 AD with HA)</strong></td><td>Single AD (no HA)</td></tr>
+          <tr><td>OKE Workers</td><td><strong>2 OCPU/16 GB · 2-10 nodes</strong> · 2 AD spread</td><td>1 OCPU/4 GB · 1-3 nodes · 1 AD</td></tr>
+          <tr><td>PostgreSQL</td><td><strong>HA Pair · 4 OCPU/16 GB · 256 GB</strong> · auto-failover</td><td>Single · 2 OCPU/8 GB · 100 GB</td></tr>
+          <tr><td>Cache (Valkey)</td><td><strong>Primary + Replica · 2 vCPU/8 GB</strong> · 2 AD</td><td>Single · 1 vCPU/4 GB</td></tr>
+          <tr><td>Streaming</td><td><strong>4 partitions · 7-day retention</strong> · Multi-AD</td><td>2 partitions · 3-day · single AD</td></tr>
+          <tr><td>Load Balancer</td><td><strong>Flexible 10-8000 Mbps</strong> · auto-scale</td><td>Fixed 10 Mbps</td></tr>
+          <tr><td>WAF</td><td><strong>Prevention mode</strong> + Bot Management</td><td>Detection mode (log only)</td></tr>
+          <tr><td>Object Storage</td><td><strong>RA-GZRS</strong> · cross-region replica to Tokyo</td><td>Standard · single AD</td></tr>
+          <tr><td>Backup retention</td><td><strong>30 days</strong> · PITR</td><td>7 days</td></tr>
+          <tr><td>Vault</td><td><strong>Virtual Private Vault</strong> · HSM-backed keys</td><td>Default vault</td></tr>
+        </tbody>
+      </table>
+
+      <div class="prod-vs-nonprod">
+        <strong>Cost:</strong> Prod ~$790/เดือน (~28,500 THB) · Yearly ~340K THB · กับ Universal Credits 1-year ~25% discount → <strong>~260K THB/year</strong>
+      </div>
+
+      <h2>สิ่งที่ต้องเตรียม</h2>
+
+      <div class="checklist">
+        <div class="checklist-item"><input type="checkbox" id="pre1"><label for="pre1">OCI Tenancy + Production-grade IAM policies + service limits raised</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre2"><label for="pre2">OCI CLI configured + tested · Universal Credits commit (recommended)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre3"><label for="pre3">Change management ticket approved (production deployment)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre4"><label for="pre4">Domain <code class="inline">queue.ais.co.th</code> ready + DNS delegation plan</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre5"><label for="pre5">SSL certificate for production domain (or use OCI Certificates)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre6"><label for="pre6">SSH key pair · stored securely (not in repo)</label></div>
+        <div class="checklist-item"><input type="checkbox" id="pre7"><label for="pre7">~3-4 ชั่วโมงต่อเนื่อง · maintenance window scheduled</label></div>
+      </div>
+
+      <div class="prod-warning">
+        <div class="prod-warning-label">Production Deployment</div>
+        <p>นี่คือ <strong>Production environment</strong> ที่จะรับ live traffic · ทุก action ต้องผ่าน change management · มี rollback plan · monitor หลัง deploy 24 ชม.</p>
+      </div>
+
+      <div class="note">
+        <div class="note-label">ก่อนเริ่ม</div>
+        <p>ถ้ายังไม่เคยทำ Non-Prod codelab ก่อน · <strong>แนะนำให้ทำก่อน</strong> เพราะ Prod ใช้ pattern เดียวกันแต่ specs ใหญ่กว่า · ฝึก Non-Prod ก่อนจะลดความเสี่ยงตอน Prod</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-next" onclick="nextStep()">เริ่ม Codelab →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 1 -->
+    <section class="step-page" data-step="1">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 1 / 12</span>
+        <span class="meta-chip time">⏱ 15 นาที</span>
+        <span class="meta-chip prod">PROD</span>
+      </div>
+
+      <h1>Prerequisites &amp; Production Setup</h1>
+      <p class="lead">เตรียม CLI · IAM policies · Universal Credits · service limits</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">OCI CLI ready · IAM policies for prod-team · service limits raised · cost alerts configured</div>
+      </div>
+
+      <h2>1.1 OCI CLI + Auth (ทำเหมือน Non-Prod)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci setup config
+# Region: ap-singapore-1
+# User OCID, Tenancy OCID, ...
+
+oci iam region list --output table</pre></div>
+
+      <h2>1.2 Service Limits ตรวจสอบ</h2>
+
+      <p>ก่อน deploy Prod · ต้องแน่ใจว่ามี quota เพียงพอ</p>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci limits resource-availability get \
+  --compartment-id $(oci iam compartment list --query "data[0].\"compartment-id\"" --raw-output) \
+  --service-name compute \
+  --limit-name standard-e4-flex-memory-count \
+  --availability-domain "$(oci iam availability-domain list --query 'data[0].name' --raw-output)"</pre></div>
+
+      <div class="prod-warning">
+        <div class="prod-warning-label">Default limits อาจไม่พอ</div>
+        <p>Default tenancy ใหม่อาจมี OCPU limit ต่ำมาก (e.g., 10 OCPUs) · ก่อน build Prod · เปิด ticket ขอเพิ่ม limit เป็น ≥50 OCPU + storage 1 TB · ใช้เวลา 1-3 วัน</p>
+      </div>
+
+      <h2>1.3 IAM Policies — Production Team</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Create production-team group
+oci iam group create --name "ais-prod-admins" \
+  --description "Production admin team · full access in compartment-prod"
+
+# Policy: prod-admins can manage all-resources in compartment-prod
+oci iam policy create \
+  --compartment-id $TENANCY_OCID \
+  --name "prod-admins-policy" \
+  --description "Prod admin team permissions" \
+  --statements '[
+    "Allow group ais-prod-admins to manage all-resources in compartment compartment-prod",
+    "Allow group ais-prod-admins to read audit-events in tenancy",
+    "Allow group ais-prod-admins to inspect compartments in tenancy"
+  ]'</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Least Privilege สำหรับ Prod</div>
+        <p>Prod team ใช้ <strong>"manage"</strong> เฉพาะใน compartment-prod · ไม่ให้ <strong>tenancy-level</strong> manage permission · audit events read-only · ใช้ Bastion service สำหรับ SSH access แทน static keys</p>
+      </div>
+
+      <h2>1.4 Cost Alerts</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Set up budget alert at $800/month (80% of expected $1000)
+oci budgets budget create \
+  --compartment-id $TENANCY_OCID \
+  --display-name "prod-monthly-budget" \
+  --amount 1000 \
+  --reset-period MONTHLY \
+  --target-type COMPARTMENT \
+  --targets "[\"$COMPARTMENT_OCID\"]"
+
+oci budgets alert-rule create \
+  --budget-id $BUDGET_OCID \
+  --display-name "prod-80-percent" \
+  --type ACTUAL \
+  --threshold 80 \
+  --threshold-type PERCENTAGE \
+  --recipients "ops@ais.co.th"</pre></div>
+
+      <h2>1.5 Export Production Environment Variables</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export SUFFIX="aisprod$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 3)"
+export REGION="ap-singapore-1"
+export DR_REGION="ap-tokyo-1"
+export COMPARTMENT_NAME="compartment-prod-${SUFFIX}"
+export VCN_NAME="vcn-prod-${SUFFIX}"
+export OKE_NAME="oke-prod-${SUFFIX}"
+export PG_NAME="pg-prod-${SUFFIX}"
+export CACHE_NAME="cache-prod-${SUFFIX}"
+export STREAM_POOL="stream-prod-${SUFFIX}"
+
+# SSH key
+[ -f ~/.ssh/oke_prod_rsa ] || ssh-keygen -t rsa -b 4096 -f ~/.ssh/oke_prod_rsa -N ""
+export SSH_PUB_KEY=$(cat ~/.ssh/oke_prod_rsa.pub)
+
+echo "Prod Suffix: $SUFFIX"
+# Save to ~/oci-prod.env for resume</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ</div>
+        <p>OCI CLI works · service limits adequate · IAM policies set · cost alerts configured</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 2 -->
+    <section class="step-page" data-step="2">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 2 / 12</span>
+        <span class="meta-chip time">⏱ 12 นาที</span>
+        <span class="meta-chip prod">PROD</span>
+      </div>
+
+      <h1>Compartment + VCN (Multi-AD)</h1>
+      <p class="lead">VCN 10.20.0.0/16 + 4 subnets spread across 2 ADs · NSGs · Service Gateway</p>
+
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">Compartment "prod" + VCN with Multi-AD subnets · NSGs · Service Gateway · ready for OKE/DB/Cache</div>
+      </div>
+
+      <h2>2.1 Create Compartment</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci iam compartment create \
+  --compartment-id $TENANCY_OCID \
+  --name $COMPARTMENT_NAME \
+  --description "Production environment for AIS MMT-RFP" \
+  --wait-for-state ACTIVE
+
+export COMPARTMENT_OCID=$(oci iam compartment list \
+  --compartment-id $TENANCY_OCID \
+  --name $COMPARTMENT_NAME \
+  --query "data[0].id" --raw-output)</pre></div>
+
+      <h2>2.2 VCN with Multi-AD Subnets</h2>
+
+      <table>
+        <thead><tr><th>Subnet</th><th>CIDR</th><th>AD</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>public-lb</code></td><td>10.20.0.0/24</td><td>regional</td><td>Load Balancer (public)</td></tr>
+          <tr><td><code>oke-nodes</code></td><td>10.20.1.0/22</td><td>regional</td><td>OKE workers across AD-1 + AD-2</td></tr>
+          <tr><td><code>oke-pods</code></td><td>10.20.8.0/21</td><td>regional</td><td>Pod IPs (VCN-native)</td></tr>
+          <tr><td><code>private-data</code></td><td>10.20.16.0/24</td><td>regional</td><td>DB · Cache · Streaming endpoints</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <div class="note-label">OCI Subnets are Regional</div>
+        <p>OCI subnets <strong>are regional</strong> (not AD-bound) by default · resources within a regional subnet can be placed in any AD · ใช้ regional subnets เพื่อ Multi-AD HA · ใน Prod เราจะ deploy DB primary AD-1 + standby AD-2 ในระบบ subnet เดียวกัน</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export VCN_OCID=$(oci network vcn create \
+  --compartment-id $COMPARTMENT_OCID \
+  --display-name $VCN_NAME \
+  --cidr-blocks '["10.20.0.0/16"]' \
+  --dns-label "vcnprod${SUFFIX}" \
+  --wait-for-state AVAILABLE \
+  --query "data.id" --raw-output)
+
+# Gateways
+oci network internet-gateway create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --is-enabled true --display-name "igw-prod" --wait-for-state AVAILABLE
+oci network nat-gateway create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "nat-prod" --wait-for-state AVAILABLE
+oci network service-gateway create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "sg-prod" \
+  --services "[{\"serviceId\":\"$(oci network service list --query 'data[?contains(\"cidr-block\",`all-`)].id|[0]' --raw-output)\"}]" \
+  --wait-for-state AVAILABLE</pre></div>
+
+      <h2>2.3 Network Security Groups (NSGs)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># NSG for OKE workers
+oci network nsg create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "nsg-oke-workers" --wait-for-state AVAILABLE
+
+# NSG for DB (only OKE workers can access)
+oci network nsg create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "nsg-db" --wait-for-state AVAILABLE
+
+# NSG for Cache
+oci network nsg create -c $COMPARTMENT_OCID --vcn-id $VCN_OCID --display-name "nsg-cache" --wait-for-state AVAILABLE</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">NSG > Security List</div>
+        <p>OCI Network Security Groups (NSG) ดีกว่า security list เพราะ: (1) ผูกกับ vNIC เฉพาะ · (2) ไม่ผูกกับ subnet · (3) สามารถ reference NSG อื่นเป็น source (เช่น "DB NSG allows traffic from OKE NSG only") · Prod แนะนำใช้ NSG</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 3 -->
+    <section class="step-page" data-step="3">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 3 / 12</span>
+        <span class="meta-chip time">⏱ 12 นาที</span>
+        <span class="meta-chip oci">Edge</span>
+      </div>
+
+      <h1>OCI WAF (Prevention) + Load Balancer (Flexible)</h1>
+      <p class="lead">Production-grade edge: WAF in Prevention mode + Bot Management · Flexible LB 10-8000 Mbps</p>
+
+      <h2>3.1 Flexible Load Balancer (auto-scale)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export LB_OCID=$(oci lb load-balancer create \
+  --compartment-id $COMPARTMENT_OCID \
+  --display-name "lb-prod-${SUFFIX}" \
+  --shape-name "flexible" \
+  --shape-details '{"minimumBandwidthInMbps":10,"maximumBandwidthInMbps":8000}' \
+  --subnet-ids "[\"$PUBLIC_SUBNET_OCID\"]" \
+  --is-private false \
+  --wait-for-state SUCCEEDED \
+  --query "data.id" --raw-output)</pre></div>
+
+      <h2>3.2 WAF Prevention Mode + Bot Management</h2>
+
+      <div class="prod-warning">
+        <div class="prod-warning-label">Prevention Mode = Block</div>
+        <p>WAF จะ <strong>block</strong> requests ที่ match OWASP rules · ทดสอบใน Detection mode ก่อน · ดู false positives · whitelist ก่อนเปลี่ยนเป็น Prevention</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat > waf-prod.json <<'EOF'
+{
+  "actions": [
+    {"name": "Block", "type": "RETURN_HTTP_RESPONSE", "code": 403},
+    {"name": "Challenge", "type": "CHECK"}
+  ],
+  "requestProtection": {
+    "rules": [
+      {"key": "owasp-crs", "name": "OWASP CRS Top 10",
+       "type": "PROTECTION", "actionName": "Block",
+       "protectionCapabilities": [
+         {"key": "920170", "version": 1},
+         {"key": "942100", "version": 1},
+         {"key": "941100", "version": 1}
+       ]}
+    ]
+  },
+  "requestRateLimiting": {
+    "rules": [
+      {"name": "rate-limit-per-ip", "actionName": "Block",
+       "configurations": [{"period": 60, "requestsLimit": 1000, "actionDuration": 600}]}
+    ]
+  }
+}
+EOF
+
+oci waf web-app-firewall-policy create \
+  -c $COMPARTMENT_OCID \
+  --display-name "waf-prod-${SUFFIX}" \
+  --from-json file://waf-prod.json \
+  --wait-for-state ACTIVE</pre></div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 4 -->
+    <section class="step-page" data-step="4">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 4 / 12</span>
+        <span class="meta-chip time">⏱ 20 นาที</span>
+        <span class="meta-chip oci">Compute</span>
+      </div>
+
+      <h1>OKE Cluster — Multi-AD HA</h1>
+      <p class="lead">2 OCPU/16 GB workers · 2-10 nodes auto-scale · spread across AD-1 + AD-2</p>
+
+      <h2>4.1 Create OKE Cluster (Production)</h2>
+
+      <div class="notice">
+        <div class="notice-label">ใช้เวลา ~15 นาที</div>
+        <p>Multi-AD OKE provisioning · grab coffee</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export OKE_OCID=$(oci ce cluster create \
+  --compartment-id $COMPARTMENT_OCID \
+  --name $OKE_NAME \
+  --vcn-id $VCN_OCID \
+  --kubernetes-version "v1.29.1" \
+  --service-lb-subnet-ids "[\"$PUBLIC_SUBNET_OCID\"]" \
+  --endpoint-public-ip-enabled true \
+  --cluster-pod-network-options '[{"cniType":"OCI_VCN_IP_NATIVE"}]' \
+  --wait-for-state SUCCEEDED \
+  --query "data.id" --raw-output)</pre></div>
+
+      <h2>4.2 Multi-AD Node Pool</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export AD1=$(oci iam availability-domain list -c $TENANCY_OCID --query "data[0].name" --raw-output)
+export AD2=$(oci iam availability-domain list -c $TENANCY_OCID --query "data[1].name" --raw-output)
+
+oci ce node-pool create \
+  --compartment-id $COMPARTMENT_OCID \
+  --cluster-id $OKE_OCID \
+  --name "pool-prod-multiAD" \
+  --kubernetes-version "v1.29.1" \
+  --node-shape "VM.Standard.E4.Flex" \
+  --node-shape-config '{"ocpus":2,"memoryInGBs":16}' \
+  --size 4 \
+  --placement-configs "[
+    {\"availabilityDomain\":\"$AD1\",\"subnetId\":\"$NODE_SUBNET_OCID\"},
+    {\"availabilityDomain\":\"$AD2\",\"subnetId\":\"$NODE_SUBNET_OCID\"}
+  ]" \
+  --ssh-public-key "$SSH_PUB_KEY" \
+  --wait-for-state SUCCEEDED</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Placement Configs · Multi-AD Spread</div>
+        <p>กำหนด <code class="inline">placement-configs</code> หลาย ADs · OKE จะ <strong>distribute nodes evenly</strong> · size=4 จะได้ 2 nodes ใน AD-1 + 2 ใน AD-2 · ถ้า AD ล่ม · pods จะ reschedule ไป AD ที่เหลือ</p>
+      </div>
+
+      <h2>4.3 Cluster Autoscaler</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>helm repo add autoscaler https://kubernetes.github.io/autoscaler
+helm install cluster-autoscaler autoscaler/cluster-autoscaler \
+  -n kube-system \
+  --set autoDiscovery.clusterName=$OKE_NAME \
+  --set cloudProvider=oci \
+  --set extraArgs.scale-down-delay-after-add=10m \
+  --set extraArgs.scale-down-unneeded-time=10m</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ Multi-AD</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl get nodes -L oci.oraclecloud.com/fault-domain,topology.kubernetes.io/zone</pre></div>
+        <p>คาดว่าเห็น nodes ใน <strong>2 zones</strong> (AD-1 + AD-2)</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 5 -->
+    <section class="step-page" data-step="5">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 5 / 12</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">Network</span>
+      </div>
+
+      <h1>K8s Gateway API + TLS</h1>
+      <p class="lead">NGINX Gateway Controller + production TLS cert from OCI Certificates</p>
+
+      <h2>5.1 Install Gateway API CRDs + Controller</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
+
+helm install nginx-gateway nginx-stable/nginx-gateway-fabric \
+  -n nginx-gateway --create-namespace \
+  --set nginxGateway.replicaCount=2 \
+  --set nginxGateway.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">PodAntiAffinity</div>
+        <p>Prod ใช้ <strong>PodAntiAffinity</strong> ให้ Gateway controller 2 replicas อยู่คนละ node · ป้องกัน single-point-of-failure · ถ้า node ล่ม · controller อีกตัวยังทำงานได้</p>
+      </div>
+
+      <h2>5.2 TLS Certificate</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>oci certs-mgmt certificate create-public \
+  -c $COMPARTMENT_OCID \
+  --name "queue-ais-cert" \
+  --certificate-config '{"configType":"MANAGED_EXTERNALLY_ISSUED_BY_INTERNAL_CA",
+    "caId":"...","subject":{"commonName":"queue.ais.co.th"}}'</pre></div>
+
+      <h2>5.3 Production Namespace + Gateway</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>kubectl create ns queue-prod
+kubectl label ns queue-prod env=prod tier=app
+
+cat &lt;&lt;EOF | kubectl apply -n queue-prod -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: queue-gateway
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: https
+    port: 443
+    protocol: HTTPS
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: queue-tls-secret
+EOF</pre></div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 6 -->
+    <section class="step-page" data-step="6">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 6 / 12</span>
+        <span class="meta-chip time">⏱ 15 นาที</span>
+        <span class="meta-chip oci">Data</span>
+      </div>
+
+      <h1>OCI Database PostgreSQL — HA Pair</h1>
+      <p class="lead">PostgreSQL 16 · 4 OCPU/16 GB · 256 GB · <strong>Primary AD-1 + Sync Standby AD-2</strong> · auto-failover</p>
+
+      <div class="prod-warning">
+        <div class="prod-warning-label">99.95% SLA · Sync Replication</div>
+        <p>HA pair มี <strong>sync replication</strong> ระหว่าง AD-1 (primary) และ AD-2 (standby) · <strong>RPO = 0</strong> · failover &lt; 60s · cost +~50% vs single instance</p>
+      </div>
+
+      <h2>6.1 Create HA Database System</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export PG_PWD="$(openssl rand -base64 32 | tr -d '+/=' | head -c 32)Aa1!"
+# Store password in OCI Vault NOT in shell history
+
+cat > pg-prod-config.json <<EOF
+{
+  "compartmentId": "$COMPARTMENT_OCID",
+  "displayName": "$PG_NAME",
+  "dbVersion": "16",
+  "shape": "PostgreSQL.VM.Standard.E4.Flex.4.32GB",
+  "instanceCount": 2,
+  "instanceMemorySizeInGBs": 16,
+  "instanceOcpuCount": 4,
+  "storageDetails": {
+    "systemType": "OCI_OPTIMIZED_STORAGE",
+    "isRegionallyDurable": true,
+    "iops": 25000
+  },
+  "networkDetails": {
+    "subnetId": "$DATA_SUBNET_OCID",
+    "nsgIds": ["$NSG_DB_OCID"]
+  },
+  "credentials": {
+    "username": "pgadmin",
+    "passwordDetails": {"passwordType": "PLAIN_TEXT", "password": "$PG_PWD"}
+  },
+  "managementPolicy": {
+    "backupPolicy": {
+      "kind": "DAILY",
+      "backupStart": "02:00",
+      "retentionDays": 30
+    },
+    "maintenanceWindowStart": "Sunday 03:00"
+  }
+}
+EOF
+
+oci psql db-system create --from-json file://pg-prod-config.json --wait-for-state ACTIVE</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">isRegionallyDurable + instanceCount=2</div>
+        <p><strong>instanceCount=2</strong> = HA pair (1 primary + 1 standby) · <strong>isRegionallyDurable=true</strong> = storage replicated cross-AD · backup retention 30 days · auto-promote standby on primary failure</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 7 -->
+    <section class="step-page" data-step="7">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 7 / 12</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">Data</span>
+      </div>
+
+      <h1>OCI Cache (Valkey HA) — Primary + Replica</h1>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat > cache-prod-config.json <<EOF
+{
+  "compartmentId": "$COMPARTMENT_OCID",
+  "displayName": "$CACHE_NAME",
+  "softwareVersion": "VALKEY_8_1",
+  "clusterMode": "NONCLUSTERED",
+  "shardCount": 1,
+  "nodeCount": 2,
+  "nodeMemoryInGBs": 8,
+  "subnetId": "$DATA_SUBNET_OCID",
+  "nsgIds": ["$NSG_CACHE_OCID"]
+}
+EOF
+
+oci cache cluster create --from-json file://cache-prod-config.json --wait-for-state ACTIVE</pre></div>
+
+      <div class="note">
+        <div class="note-label">nodeCount=2 = HA</div>
+        <p>2 nodes = 1 primary + 1 replica · sync replication · auto-failover · cost ~$90/mo (vs Non-Prod single ~$35/mo)</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 8 -->
+    <section class="step-page" data-step="8">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 8 / 12</span>
+        <span class="meta-chip time">⏱ 8 นาที</span>
+        <span class="meta-chip oci">Messaging</span>
+      </div>
+
+      <h1>OCI Streaming — Production (Multi-AD)</h1>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export POOL_OCID=$(oci streaming admin stream-pool create \
+  -c $COMPARTMENT_OCID --name $STREAM_POOL --wait-for-state ACTIVE \
+  --query "data.id" --raw-output)
+
+for STREAM in queue.events integration.events notification.requests ; do
+  RETENTION=168  # 7 days default
+  [ "$STREAM" = "integration.events" ] && RETENTION=720  # 30 days for AIS audit
+  oci streaming admin stream create \
+    -c $COMPARTMENT_OCID --stream-pool-id $POOL_OCID \
+    --name $STREAM --partitions 4 --retention-in-hours $RETENTION \
+    --wait-for-state ACTIVE
+done</pre></div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 9 -->
+    <section class="step-page" data-step="9">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 9 / 12</span>
+        <span class="meta-chip time">⏱ 10 นาที</span>
+        <span class="meta-chip oci">Storage</span>
+      </div>
+
+      <h1>Object Storage (RA-GZRS) + Virtual Private Vault</h1>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Object Storage with cross-region replication to Tokyo
+for B in uploads public-media backups ; do
+  oci os bucket create -c $COMPARTMENT_OCID --name "queue-prod-${B}" --storage-tier Standard
+  # Setup replication to DR region
+  oci os replication-policy create -bn "queue-prod-${B}" --ns $OS_NAMESPACE \
+    --name "tokyo-dr-${B}" --destination-region $DR_REGION \
+    --destination-bucket-name "queue-prod-${B}-dr"
+done
+
+# Virtual Private Vault for production (HSM-backed)
+export VAULT_OCID=$(oci kms management vault create \
+  -c $COMPARTMENT_OCID --display-name "vault-prod-${SUFFIX}" \
+  --vault-type VIRTUAL_PRIVATE \
+  --wait-for-state ACTIVE --query "data.id" --raw-output)</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Virtual Private Vault vs Default</div>
+        <p>VIRTUAL_PRIVATE = HSM-backed dedicated hardware · FIPS 140-2 Level 3 · ~$2/hour vs Default ~$1/month · ใช้ใน Prod เพื่อ compliance + audit</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 10 -->
+    <section class="step-page" data-step="10">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 10 / 12</span>
+        <span class="meta-chip time">⏱ 25 นาที</span>
+        <span class="meta-chip prod">PROD</span>
+      </div>
+
+      <h1>Deploy Production Workload</h1>
+      <p class="lead">Push images · deploy with PodAntiAffinity · TopologySpreadConstraints · PDB · HPA</p>
+
+      <h2>10.1 Build &amp; Push to OCIR (Production tag)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>docker buildx build --platform linux/amd64 \
+  -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:1.0.0 \
+  -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:latest \
+  --push .</pre></div>
+
+      <h2>10.2 Deploy with Production-grade Patterns</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -n queue-prod -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-api
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: queue-api}}
+  template:
+    metadata:
+      labels: {app: queue-api, env: prod}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector: {matchLabels: {app: queue-api}}
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: oci.oraclecloud.com/fault-domain
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector: {matchLabels: {app: queue-api}}
+      containers:
+      - name: api
+        image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:1.0.0
+        ports: [{containerPort: 8080}]
+        resources:
+          requests: {cpu: 200m, memory: 256Mi}
+          limits:   {cpu: 1000m, memory: 1Gi}
+        readinessProbe:
+          httpGet: {path: /healthz, port: 8080}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8080}
+          initialDelaySeconds: 30
+          periodSeconds: 30
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: queue-api-pdb
+spec:
+  minAvailable: 2
+  selector: {matchLabels: {app: queue-api}}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: queue-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: queue-api
+  minReplicas: 3
+  maxReplicas: 50
+  metrics:
+  - type: Resource
+    resource: {name: cpu, target: {type: Utilization, averageUtilization: 60}}
+EOF</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">3 Production Pod Patterns</div>
+        <p>(1) <strong>PodAntiAffinity</strong> · pods spread across nodes · (2) <strong>TopologySpreadConstraints</strong> · pods spread across ADs · (3) <strong>PodDisruptionBudget minAvailable=2</strong> · ห้าม drain pods ที่จะให้เหลือ &lt; 2</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จขั้นนี้ →</button>
+      </div>
+    </section>
+
+
+    <!-- STEP 11 -->
+    <section class="step-page" data-step="11">
+      <div class="step-meta">
+        <span class="meta-chip">ขั้น 11 / 12</span>
+        <span class="meta-chip time">⏱ 30 นาที</span>
+        <span class="meta-chip prod">PROD VALIDATE</span>
+      </div>
+
+      <h1>Failover Test + Cost Monitoring + Cutover</h1>
+      <p class="lead">ทดสอบ HA จริง · simulate AD failure · verify auto-recovery · setup cost alerts · cutover plan</p>
+
+      <h2>11.1 End-to-End Smoke Test</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>export LB_IP=$(oci lb load-balancer get --load-balancer-id $LB_OCID --query "data.\"ip-addresses\"[0].\"ip-address\"" --raw-output)
+
+curl -X POST "https://queue.ais.co.th/v1/queues" \
+  -H "Content-Type: application/json" \
+  -d '{"branch_id":"AIS-BKK-0001"}'</pre></div>
+
+      <h2>11.2 Failover Test — Simulate DB Primary Failure</h2>
+
+      <div class="prod-warning">
+        <div class="prod-warning-label">Real Failover Test</div>
+        <p>คำสั่งนี้จะ <strong>switchover</strong> DB primary → standby · เกิด ~30-60s downtime · ทำใน maintenance window เท่านั้น</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Trigger failover
+oci psql db-system failover --db-system-id $PG_OCID --wait-for-state ACTIVE
+
+# Watch from another shell:
+while true; do
+  curl -s -o /dev/null -w "%{http_code} " "https://queue.ais.co.th/healthz"
+  sleep 1
+done</pre></div>
+
+      <p>คาดว่าเห็น: 200 200 200 · 502 502 502 (failover ในระหว่าง) · 200 200 ✓ recovered ภายใน 60s</p>
+
+      <h2>11.3 Cost Monitoring</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Daily cost report
+oci usage-api request-summarized-usages \
+  --time-usage-started "$(date -u -d '7 days ago' +'%Y-%m-%dT%H:%M:%SZ')" \
+  --time-usage-ended "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+  --granularity DAILY \
+  --query-type COST \
+  --compartment-depth 5 \
+  --filter "{\"operator\":\"AND\",\"dimensions\":[{\"key\":\"compartmentId\",\"value\":\"$COMPARTMENT_OCID\"}]}"</pre></div>
+
+      <h2>11.4 Production Cutover Plan</h2>
+
+      <div class="checklist">
+        <div class="checklist-item"><input type="checkbox"><label>Pre-cutover: backup existing system · communicate with AIS</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>DNS TTL lowered to 60s (1 day before cutover)</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Soft launch · 10 shops test for 24 hours</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Monitor metrics: error rate, latency p99, consumer lag</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Gradual rollout: 50 → 100 → 228 shops over 1 week</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Rollback plan: DNS revert + traffic shift back to old system</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>24/7 on-call rotation for first week</label></div>
+        <div class="checklist-item"><input type="checkbox"><label>Daily standup with AIS for first 2 weeks</label></div>
+      </div>
+
+      <div class="prod-warning">
+        <div class="prod-warning-label">DO NOT TEARDOWN</div>
+        <p>ไม่มี teardown script สำหรับ Prod · นี่คือ production environment ที่จะ serve traffic · ถ้าต้องการลบ · ต้อง <strong>change management process</strong> + data migration + decommissioning plan</p>
+      </div>
+
+      <h2>🎉 Production Deployed!</h2>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">Resources created</div><div class="stat-value">~25</div></div>
+        <div class="stat"><div class="stat-label">SLA achieved</div><div class="stat-value">99.95%</div></div>
+        <div class="stat"><div class="stat-label">HA tested</div><div class="stat-value">✓</div></div>
+        <div class="stat"><div class="stat-label">RPO</div><div class="stat-value">0</div></div>
+        <div class="stat"><div class="stat-label">RTO</div><div class="stat-value">≤60s</div></div>
+        <div class="stat"><div class="stat-label">Monthly cost</div><div class="stat-value">~$790</div></div>
+      </div>
+
+      <h3>เรียนต่อ</h3>
+      <ul>
+        <li>Setup Grafana Cloud observability · alerting rules</li>
+        <li>Configure DR drill quarterly (Singapore → Tokyo failover test)</li>
+        <li>Implement CI/CD with progressive rollout (canary deployments)</li>
+        <li>Cost optimization · Reserved Instance · Universal Credits commit</li>
+      </ul>
+
+      <div class="step-nav">
+        <button class="btn secondary" onclick="prevStep()">← กลับ</button>
+        <button class="btn complete-btn" onclick="completeAndNext()">เสร็จสิ้น 🎉</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const totalSteps = 12;
+  let currentStep = 0;
+  let completed = new Set();
+
+  const stepCompletions = {
+    0: [], 1: [],
+    2: ['tenancy', 'vcn'],
+    3: ['waf', 'lb'],
+    4: ['oke', 'oke-ad1', 'oke-ad2'],
+    5: ['gateway-api'],
+    6: ['db-primary', 'db-standby'],
+    7: ['cache-primary', 'cache-replica'],
+    8: ['streaming'],
+    9: ['object-storage', 'vault'],
+    10: ['pods'],
+    11: ['pods'],
+  };
+
+  const arrowDeps = {
+    'arr-user-waf': ['waf'],
+    'arr-waf-lb': ['waf', 'lb'],
+    'arr-lb-oke': ['lb', 'oke'],
+    'arr-oke-cache': ['oke', 'cache-primary'],
+    'arr-oke-stream': ['oke', 'streaming'],
+    'arr-oke-db': ['oke', 'db-primary'],
+    'arr-db-storage': ['db-primary', 'object-storage'],
+  };
+
+  function updateArchProgress(step) {
+    const done = new Set();
+    const justDoneInThisStep = new Set(stepCompletions[step] || []);
+    for (let s = 0; s <= step; s++) {
+      (stepCompletions[s] || []).forEach(c => done.add(c));
+    }
+    document.querySelectorAll('#archProgress .arch-comp').forEach(comp => {
+      const id = comp.dataset.id;
+      const isDone = done.has(id);
+      comp.classList.toggle('done', isDone);
+      comp.classList.toggle('just-done', justDoneInThisStep.has(id) && isDone);
+    });
+    Object.entries(arrowDeps).forEach(([arrowId, deps]) => {
+      const arrow = document.getElementById(arrowId);
+      if (!arrow) return;
+      const allDone = deps.every(d => done.has(d));
+      arrow.classList.toggle('active', allDone);
+      if (allDone) {
+        if (arrowId === 'arr-oke-cache') arrow.style.setProperty('--c', '#E91E63');
+        else if (arrowId === 'arr-oke-stream') arrow.style.setProperty('--c', '#231F20');
+        else arrow.style.setProperty('--c', '#1F5BA8');
+      }
+    });
+  }
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('oci-prod-codelab') || '{}');
+    completed = new Set(saved.completed || []);
+    if (typeof saved.current === 'number') currentStep = saved.current;
+  } catch {}
+
+  function saveProgress() {
+    localStorage.setItem('oci-prod-codelab', JSON.stringify({
+      completed: Array.from(completed),
+      current: currentStep,
+    }));
+  }
+
+  function showStep(n) {
+    currentStep = Math.max(0, Math.min(totalSteps - 1, n));
+    document.querySelectorAll('.step-page').forEach(s => {
+      s.classList.toggle('active', Number(s.dataset.step) === currentStep);
+    });
+    document.querySelectorAll('.nav-step').forEach(s => {
+      const stepN = Number(s.dataset.step);
+      s.classList.toggle('active', stepN === currentStep);
+      s.classList.toggle('done', completed.has(stepN));
+    });
+    updateProgress();
+    updateArchProgress(currentStep);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    saveProgress();
+  }
+
+  function updateProgress() {
+    const done = completed.size;
+    const denom = 11;
+    const pct = Math.round((done / denom) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = done + ' / ' + denom + ' ขั้น';
+  }
+
+  function nextStep() { showStep(currentStep + 1); }
+  function prevStep() { showStep(currentStep - 1); }
+  function completeAndNext() {
+    completed.add(currentStep);
+    showStep(currentStep + 1);
+  }
+
+  document.querySelectorAll('.nav-step').forEach(s => {
+    s.addEventListener('click', () => showStep(Number(s.dataset.step)));
+  });
+
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('copy-btn')) {
+      const pre = e.target.parentElement.querySelector('pre');
+      const text = pre ? pre.innerText : '';
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = e.target.textContent;
+        e.target.textContent = '✓ Copied';
+        e.target.classList.add('copied');
+        setTimeout(() => {
+          e.target.textContent = orig;
+          e.target.classList.remove('copied');
+        }, 1400);
+      });
+    }
+  });
+
+  const urlParams = new URLSearchParams(location.search);
+  const queryStep = urlParams.get('step');
+  if (queryStep !== null) {
+    const n = parseInt(queryStep, 10);
+    if (!isNaN(n)) currentStep = Math.max(0, Math.min(totalSteps - 1, n));
+  }
+
+  showStep(currentStep);
+</script>
+</body>
+</html>
