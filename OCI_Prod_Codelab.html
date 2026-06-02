@@ -1895,18 +1895,36 @@ export VAULT_OCID=$(oci kms management vault create \
         <span class="meta-chip prod">PROD</span>
       </div>
 
-      <h1>Deploy Production Workload</h1>
-      <p class="lead">Push images · deploy with PodAntiAffinity · TopologySpreadConstraints · PDB · HPA</p>
+      <h1>Deploy Production Workload — FE · BE · API</h1>
+      <p class="lead">Push 3 images · deploy each with PodAntiAffinity · TopologySpreadConstraints · PDB · HPA</p>
 
-      <h2>10.1 Build &amp; Push to OCIR (Production tag)</h2>
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">3 production Deployments (api, fe, be) · แต่ละตัวมี 3 replicas · pod anti-affinity ระดับ node · topology spread ข้าม AD · PDB minAvailable=2 · HPA scale CPU 60%</div>
+      </div>
+
+      <div class="note">
+        <div class="note-label">3 Apps Recap</div>
+        <p><strong>queue-api</strong> = Go/Echo backend (port 8080 · CPU-heavy · scale to 50) · <strong>queue-fe</strong> = Vue customer UI (port 80 · static · scale to 20) · <strong>queue-be</strong> = Vue admin UI (port 80 · static · scale to 10 · internal users only)</p>
+      </div>
+
+      <h2>10.1 Build &amp; Push 3 Production Images</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
-<pre>docker buildx build --platform linux/amd64 \
-  -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:1.0.0 \
-  -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:latest \
-  --push .</pre></div>
+<pre>for APP in api fe be ; do
+  cd ~/queue-${APP}
+  docker buildx build --platform linux/amd64 \
+    -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-${APP}:1.0.0 \
+    -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-${APP}:latest \
+    --push .
+done</pre></div>
 
-      <h2>10.2 Deploy with Production-grade Patterns</h2>
+      <div class="prod-warning">
+        <div class="prod-warning-label">Image Tag Discipline</div>
+        <p>Prod tag ตาม semver (1.0.0 · 1.1.0 · 1.2.0) · ห้ามใช้ <code class="inline">latest</code> เป็น tag เดียวใน deployment · เพราะ rollback ไม่ได้ · เก็บ <code class="inline">:latest</code> เป็น convenience tag เท่านั้น</p>
+      </div>
+
+      <h2>10.2 Deploy API Pod (Go/Echo · 3 replicas · prod patterns)</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
 <pre>cat &lt;&lt;EOF | kubectl apply -n queue-prod -f -
@@ -1919,7 +1937,7 @@ spec:
   selector: {matchLabels: {app: queue-api}}
   template:
     metadata:
-      labels: {app: queue-api, env: prod}
+      labels: {app: queue-api, env: prod, tier: backend}
     spec:
       affinity:
         podAntiAffinity:
@@ -1930,13 +1948,18 @@ spec:
               topologyKey: kubernetes.io/hostname
       topologySpreadConstraints:
       - maxSkew: 1
-        topologyKey: oci.oraclecloud.com/fault-domain
+        topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: DoNotSchedule
         labelSelector: {matchLabels: {app: queue-api}}
       containers:
       - name: api
         image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:1.0.0
         ports: [{containerPort: 8080}]
+        env:
+        - name: DB_DSN
+          valueFrom: {secretKeyRef: {name: pg-dsn, key: dsn}}
+        - name: CACHE_ENDPOINT
+          value: "${CACHE_ENDPOINT}:6379"
         resources:
           requests: {cpu: 200m, memory: 256Mi}
           limits:   {cpu: 1000m, memory: 1Gi}
@@ -1949,33 +1972,245 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 30
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-api
+spec:
+  selector: {app: queue-api}
+  ports: [{port: 80, targetPort: 8080}]
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
-metadata:
-  name: queue-api-pdb
+metadata: {name: queue-api-pdb}
 spec:
   minAvailable: 2
   selector: {matchLabels: {app: queue-api}}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
-metadata:
-  name: queue-api-hpa
+metadata: {name: queue-api-hpa}
 spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: queue-api
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: queue-api}
   minReplicas: 3
   maxReplicas: 50
   metrics:
   - type: Resource
     resource: {name: cpu, target: {type: Utilization, averageUtilization: 60}}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: {name: queue-api-route}
+spec:
+  parentRefs: [{name: queue-gateway}]
+  hostnames: ["api.queue.ais.co.th"]
+  rules:
+  - matches: [{path: {type: PathPrefix, value: /}}]
+    backendRefs: [{name: queue-api, port: 80}]
+EOF</pre></div>
+
+      <h2>10.3 Deploy FE Pod (Vue customer UI · 3 replicas)</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -n queue-prod -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-fe
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: queue-fe}}
+  template:
+    metadata:
+      labels: {app: queue-fe, env: prod, tier: frontend}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector: {matchLabels: {app: queue-fe}}
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector: {matchLabels: {app: queue-fe}}
+      containers:
+      - name: fe
+        image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-fe:1.0.0
+        ports: [{containerPort: 80}]
+        env:
+        - name: API_BASE_URL
+          value: "https://api.queue.ais.co.th"
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits:   {cpu: 500m, memory: 512Mi}
+        readinessProbe:
+          httpGet: {path: /, port: 80}
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /, port: 80}
+          initialDelaySeconds: 15
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-fe
+spec:
+  selector: {app: queue-fe}
+  ports: [{port: 80, targetPort: 80}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: queue-fe-pdb}
+spec:
+  minAvailable: 2
+  selector: {matchLabels: {app: queue-fe}}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: queue-fe-hpa}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: queue-fe}
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: {name: queue-fe-route}
+spec:
+  parentRefs: [{name: queue-gateway}]
+  hostnames: ["queue.ais.co.th"]
+  rules:
+  - matches: [{path: {type: PathPrefix, value: /}}]
+    backendRefs: [{name: queue-fe, port: 80}]
+EOF</pre></div>
+
+      <h2>10.4 Deploy BE Pod (Vue admin UI · 3 replicas)</h2>
+
+      <div class="notice">
+        <div class="notice-label">"BE" = Vue Admin UI · ไม่ใช่ Go/Echo</div>
+        <p>"BE Pod" = Vue Admin Frontend สำหรับ AIS Ops team · ไม่ใช่ Go/Echo backend (= API Pod) · BE มี role-based dashboards · กำหนด maxReplicas ต่ำกว่า FE เพราะ internal users น้อยกว่า</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -n queue-prod -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-be
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: queue-be}}
+  template:
+    metadata:
+      labels: {app: queue-be, env: prod, tier: frontend}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector: {matchLabels: {app: queue-be}}
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector: {matchLabels: {app: queue-be}}
+      containers:
+      - name: be
+        image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-be:1.0.0
+        ports: [{containerPort: 80}]
+        env:
+        - name: API_BASE_URL
+          value: "https://api.queue.ais.co.th"
+        - name: ADMIN_MODE
+          value: "true"
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits:   {cpu: 500m, memory: 512Mi}
+        readinessProbe:
+          httpGet: {path: /, port: 80}
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /, port: 80}
+          initialDelaySeconds: 15
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-be
+spec:
+  selector: {app: queue-be}
+  ports: [{port: 80, targetPort: 80}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: queue-be-pdb}
+spec:
+  minAvailable: 2
+  selector: {matchLabels: {app: queue-be}}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: queue-be-hpa}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: queue-be}
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: {name: queue-be-route}
+spec:
+  parentRefs: [{name: queue-gateway}]
+  hostnames: ["admin.queue.ais.co.th"]
+  rules:
+  - matches: [{path: {type: PathPrefix, value: /}}]
+    backendRefs: [{name: queue-be, port: 80}]
 EOF</pre></div>
 
       <div class="technique">
-        <div class="technique-label">3 Production Pod Patterns</div>
-        <p>(1) <strong>PodAntiAffinity</strong> · pods spread across nodes · (2) <strong>TopologySpreadConstraints</strong> · pods spread across ADs · (3) <strong>PodDisruptionBudget minAvailable=2</strong> · ห้าม drain pods ที่จะให้เหลือ &lt; 2</p>
+        <div class="technique-label">3 Production Pod Patterns · Applied to ALL 3 apps</div>
+        <p>(1) <strong>PodAntiAffinity</strong> · pods spread across nodes · (2) <strong>TopologySpreadConstraints</strong> on <code class="inline">topology.kubernetes.io/zone</code> · pods spread across ADs · (3) <strong>PodDisruptionBudget minAvailable=2</strong> · ห้าม drain pods ที่จะให้เหลือ &lt; 2 · ใช้ pattern เดียวกันทั้ง api / fe / be เพื่อ HA ครบทั้ง stack</p>
+      </div>
+
+      <h2>10.5 Watch + Verify Multi-AD Spread</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Watch all 3 deployments roll out
+kubectl get pods -n queue-prod -w
+# คาดว่าเห็น api×3, fe×3, be×3 = 9 pods · Running
+
+# Verify pods distributed across ADs
+kubectl get pods -n queue-prod -o wide \
+  -L topology.kubernetes.io/zone,oci.oraclecloud.com/fault-domain \
+  --sort-by=.spec.nodeName
+
+# Verify HPAs registered
+kubectl get hpa -n queue-prod
+kubectl get pdb -n queue-prod
+kubectl get httproute -n queue-prod</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ AD Spread Check</div>
+        <p>สำหรับ <strong>แต่ละ</strong> deployment (api/fe/be) · ต้องเห็น 3 pods กระจายดังนี้:</p>
+        <ul>
+          <li>ไม่มี 3 pods อยู่ใน AD เดียวกัน (topologySpreadConstraints บังคับ)</li>
+          <li>ไม่มี 2 pods อยู่ node เดียวกัน (podAntiAffinity แนะนำ)</li>
+        </ul>
       </div>
 
       <div class="step-nav">

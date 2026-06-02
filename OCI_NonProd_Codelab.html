@@ -2533,25 +2533,42 @@ export KEY_OCID=$(oci kms management key create \
         <span class="meta-chip oci">Deploy</span>
       </div>
 
-      <h1>Deploy Queue API to dev namespace</h1>
-      <p class="lead">Build Go/Echo app · push to OCIR · deploy to <code class="inline">queue-dev</code> namespace</p>
+      <h1>Deploy FE · BE · API Pods to dev namespace</h1>
+      <p class="lead">Build 3 images (Go/Echo API · Vue customer FE · Vue admin BE) · push to OCIR · deploy ทั้ง 3 ลง <code class="inline">queue-dev</code> namespace</p>
 
-      <h2>10.1 Build &amp; Push to OCIR</h2>
+      <div class="goal">
+        <div class="goal-label">เป้าหมาย</div>
+        <div class="goal-text">3 Deployments (queue-api · queue-fe · queue-be) · 3 Services · 3 HTTPRoutes · routing แบ่ง host: <code>api.*</code> / <code>queue.*</code> / <code>admin.*</code></div>
+      </div>
+
+      <div class="note">
+        <div class="note-label">3 Apps · 3 Pods</div>
+        <p><strong>queue-api</strong> = Go/Echo backend (port 8080) · <strong>queue-fe</strong> = Vue customer-facing UI (port 80 · nginx) · <strong>queue-be</strong> = Vue admin UI (port 80 · nginx) · FE+BE เรียก API ผ่าน internal Service DNS <code class="inline">queue-api.queue-dev.svc.cluster.local</code></p>
+      </div>
+
+      <h2>10.1 Build &amp; Push 3 Images to OCIR</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
-<pre>cd ~/queue-api  # use code from earlier codelab
+<pre># Auth ครั้งเดียว
+docker login ${REGION}.ocir.io -u "${OS_NAMESPACE}/{username}" -p {auth-token}
 
-# Build + push to OCIR
-docker buildx build --platform linux/amd64 \
-  -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-api:0.1.0-dev \
-  --push .</pre></div>
+# Build + push all 3 images (run from each app's source dir)
+for APP in api fe be ; do
+  cd ~/queue-${APP}
+  docker buildx build --platform linux/amd64 \
+    -t ${REGION}.ocir.io/${OS_NAMESPACE}/queue-${APP}:0.1.0-dev \
+    --push .
+done
+
+# Verify in OCIR
+oci artifacts container repository list -c $COMPARTMENT_OCID --output table</pre></div>
 
       <div class="note">
         <div class="note-label">OCIR Auth</div>
-        <p>OCIR ใช้ login: <code class="inline">docker login ${REGION}.ocir.io -u "${OS_NAMESPACE}/{username}" -p {auth-token}</code> · auth-token สร้างได้ที่ OCI Console → User Settings → Auth Tokens</p>
+        <p>auth-token สร้างได้ที่ OCI Console → User Settings → Auth Tokens · ใช้ <code class="inline">${OS_NAMESPACE}/{username}</code> เป็น docker username</p>
       </div>
 
-      <h2>10.2 Deploy to queue-dev namespace</h2>
+      <h2>10.2 Deploy API Pod (Go/Echo backend)</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
 <pre>cat &lt;&lt;EOF | kubectl apply -n queue-dev -f -
@@ -2565,7 +2582,7 @@ spec:
     matchLabels: { app: queue-api, env: dev }
   template:
     metadata:
-      labels: { app: queue-api, env: dev }
+      labels: { app: queue-api, env: dev, tier: backend }
     spec:
       containers:
       - name: api
@@ -2576,6 +2593,8 @@ spec:
           value: "host=${PG_FQDN} port=5432 user=pgadmin dbname=queue sslmode=require"
         - name: CACHE_ENDPOINT
           value: "${CACHE_ENDPOINT}:6379"
+        - name: STREAM_BOOTSTRAP
+          value: "cell-1.streaming.${REGION}.oci.oraclecloud.com:9092"
         resources:
           requests: {cpu: 100m, memory: 128Mi}
           limits:   {cpu: 500m, memory: 512Mi}
@@ -2595,7 +2614,7 @@ metadata:
 spec:
   parentRefs:
   - name: queue-gateway
-  hostnames: ["dev.queue.nonprod.local"]
+  hostnames: ["api.queue.nonprod.local"]
   rules:
   - matches:
     - path: {type: PathPrefix, value: /}
@@ -2604,11 +2623,150 @@ spec:
       port: 80
 EOF</pre></div>
 
-      <h2>10.3 Watch Deployment</h2>
+      <h2>10.3 Deploy FE Pod (Vue customer UI)</h2>
 
       <div class="code-wrap"><button class="copy-btn">Copy</button>
-<pre>kubectl get pods -n queue-dev -w
-kubectl logs -n queue-dev -l app=queue-api --tail=20 -f</pre></div>
+<pre>cat &lt;&lt;EOF | kubectl apply -n queue-dev -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-fe
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: queue-fe, env: dev }
+  template:
+    metadata:
+      labels: { app: queue-fe, env: dev, tier: frontend }
+    spec:
+      containers:
+      - name: fe
+        image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-fe:0.1.0-dev
+        ports: [{containerPort: 80}]
+        env:
+        # nginx-template entrypoint reads API_BASE_URL and rewrites built JS at container start
+        - name: API_BASE_URL
+          value: "http://queue-api.queue-dev.svc.cluster.local"
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits:   {cpu: 200m, memory: 256Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-fe
+spec:
+  selector: {app: queue-fe}
+  ports: [{port: 80, targetPort: 80}]
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: queue-fe-route
+spec:
+  parentRefs:
+  - name: queue-gateway
+  hostnames: ["queue.nonprod.local"]
+  rules:
+  - matches:
+    - path: {type: PathPrefix, value: /}
+    backendRefs:
+    - name: queue-fe
+      port: 80
+EOF</pre></div>
+
+      <div class="technique">
+        <div class="technique-label">Vue + Runtime Env Pattern</div>
+        <p>Vue/Vite ใส่ env vars ตอน build (<code class="inline">VITE_*</code>) ไม่สามารถเปลี่ยนได้ตอน runtime · pattern ที่ดี: ใช้ <strong>nginx + envsubst</strong> ที่ entrypoint แทน <code class="inline">__API_BASE__</code> ใน built JS ตอน container start · ทำให้ image เดียวใช้ได้ทุก env (dev/qa/prod)</p>
+      </div>
+
+      <h2>10.4 Deploy BE Pod (Vue admin UI)</h2>
+
+      <div class="notice">
+        <div class="notice-label">"BE" = Vue Admin UI · ไม่ใช่ Go/Echo</div>
+        <p>"BE Pod" ในสถาปัตยกรรมนี้ = Vue Admin Frontend สำหรับ AIS Operations · ไม่ใช่ Go/Echo backend (อันนั้นคือ API Pod) · BE มี role-based access สำหรับ branch managers + analytics dashboards</p>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre>cat &lt;&lt;EOF | kubectl apply -n queue-dev -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-be
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: queue-be, env: dev }
+  template:
+    metadata:
+      labels: { app: queue-be, env: dev, tier: frontend }
+    spec:
+      containers:
+      - name: be
+        image: ${REGION}.ocir.io/${OS_NAMESPACE}/queue-be:0.1.0-dev
+        ports: [{containerPort: 80}]
+        env:
+        - name: API_BASE_URL
+          value: "http://queue-api.queue-dev.svc.cluster.local"
+        - name: ADMIN_MODE
+          value: "true"
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits:   {cpu: 200m, memory: 256Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-be
+spec:
+  selector: {app: queue-be}
+  ports: [{port: 80, targetPort: 80}]
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: queue-be-route
+spec:
+  parentRefs:
+  - name: queue-gateway
+  hostnames: ["admin.queue.nonprod.local"]
+  rules:
+  - matches:
+    - path: {type: PathPrefix, value: /}
+    backendRefs:
+    - name: queue-be
+      port: 80
+EOF</pre></div>
+
+      <h2>10.5 Watch + Verify ทั้ง 3 Pods</h2>
+
+      <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># รอจน Ready ทั้ง 3
+kubectl get pods -n queue-dev -w
+# คาดว่าเห็น:
+#   queue-api-xxx   1/1 Running
+#   queue-fe-xxx    1/1 Running
+#   queue-be-xxx    1/1 Running
+
+# ดู logs ของแต่ละ tier
+kubectl logs -n queue-dev -l tier=backend --tail=20
+kubectl logs -n queue-dev -l tier=frontend --tail=20
+
+# ดู HTTPRoutes ที่ผูกกับ gateway
+kubectl get httproute -n queue-dev</pre></div>
+
+      <div class="verify">
+        <div class="verify-label">✓ ตรวจสอบ end-to-end</div>
+        <div class="code-wrap"><button class="copy-btn">Copy</button>
+<pre># Port-forward เพื่อ test แต่ละ pod โดยตรง
+kubectl port-forward -n queue-dev svc/queue-api 8080:80 &amp;
+kubectl port-forward -n queue-dev svc/queue-fe  8081:80 &amp;
+kubectl port-forward -n queue-dev svc/queue-be  8082:80 &amp;
+
+curl -s http://localhost:8080/healthz   # API → expect {"status":"ok"}
+curl -sI http://localhost:8081/         # FE  → expect 200 + nginx
+curl -sI http://localhost:8082/         # BE  → expect 200 + nginx</pre></div>
+      </div>
 
       <div class="step-nav">
         <button class="btn secondary" onclick="prevStep()">← กลับ</button>
